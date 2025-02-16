@@ -1,8 +1,10 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useMonths } from "../contexts/MonthsContext";
 import { useState } from "react";
+import { FiArrowLeft } from "react-icons/fi";
 
 function MonthlyDetail() {
+  const navigate = useNavigate();
   const { year, month } = useParams();
   const { months, addTransaction } = useMonths();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,12 +20,12 @@ function MonthlyDetail() {
 
   const getCategoryColor = (type) => {
     const colors = {
-      needs: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
+      needs: "bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
       wants:
-        "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100",
-      savings: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100",
+        "bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-100",
+      savings: "bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-100",
       income:
-        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100",
+        "bg-purple-200 text-purple-800 dark:bg-purple-900 dark:text-purple-100",
     };
     return colors[type.toLowerCase()] || "bg-gray-100";
   };
@@ -33,9 +35,20 @@ function MonthlyDetail() {
   return (
     <div className="container mx-auto px-4 pt-20 pb-8">
       <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-xl font-bold capitalize text-gray-900 dark:text-gray-100">
-          {month} {year} Transactions
-        </h1>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            <FiArrowLeft
+              size={20}
+              className="text-gray-900 dark:text-gray-100"
+            />
+          </button>
+          <h1 className="text-xl font-bold capitalize text-gray-900 dark:text-gray-100">
+            {month} {year}
+          </h1>
+        </div>
         <button
           className="bg-blue-500 text-gray-100 px-4 py-2 rounded hover:bg-blue-600"
           onClick={() => setIsModalOpen(true)}
