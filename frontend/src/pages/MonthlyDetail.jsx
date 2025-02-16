@@ -51,35 +51,44 @@ function MonthlyDetail() {
             <h2 className="text-lg font-semibold mb-4 dark:text-gray-100">
               Monthly Breakdown
             </h2>
-            
+
             <div className="space-y-4">
-              {['needs', 'wants', 'savings'].map((type) => {
-                const actualPercentage = totalIncome > 0 
-                  ? (currentMonth.categories[type] / totalIncome) * 100 
-                  : 0;
+              {["needs", "wants", "savings"].map((type) => {
+                const actualPercentage =
+                  totalIncome > 0
+                    ? (currentMonth.categories[type] / totalIncome) * 100
+                    : 0;
                 const targetPercentage = {
                   needs: 50,
                   wants: 30,
-                  savings: 20
+                  savings: 20,
                 }[type];
 
                 return (
                   <div key={type} className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="capitalize dark:text-gray-300">{type}</span>
+                      <span className="capitalize dark:text-gray-300">
+                        {type}
+                      </span>
                       <span className="dark:text-gray-300">
-                        ₹{currentMonth.categories[type].toLocaleString()} / 
-                        ₹{Math.round(totalIncome * (targetPercentage/100)).toLocaleString()}
+                        ₹{currentMonth.categories[type].toLocaleString()} / ₹
+                        {Math.round(
+                          totalIncome * (targetPercentage / 100)
+                        ).toLocaleString()}
                       </span>
                     </div>
                     <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700">
                       <div
-                        className={`h-full rounded-full ${getCategoryColor(type)}`}
+                        className={`h-full rounded-full ${getCategoryColor(
+                          type
+                        )}`}
                         style={{ width: `${Math.min(actualPercentage, 100)}%` }}
                       />
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      Target: {targetPercentage}% ({((actualPercentage/targetPercentage)*100).toFixed(0)}% of goal)
+                      Target: {targetPercentage}% (
+                      {((actualPercentage / targetPercentage) * 100).toFixed(0)}
+                      % of goal)
                     </div>
                   </div>
                 );
@@ -89,13 +98,20 @@ function MonthlyDetail() {
 
           {/* Remarks Section */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-            <h3 className="font-semibold mb-3 dark:text-gray-100">Financial Health Check</h3>
+            <h3 className="font-semibold mb-3 dark:text-gray-100">
+              Financial Health Check
+            </h3>
             <ul className="space-y-2 text-sm dark:text-gray-300">
               {currentMonth.categories.needs > totalIncome * 0.5 && (
-                <li>⚠️ Needs spending exceeds 50% - consider reducing essential expenses</li>
+                <li>
+                  ⚠️ Needs spending exceeds 50% - consider reducing essential
+                  expenses
+                </li>
               )}
               {currentMonth.categories.wants > totalIncome * 0.3 && (
-                <li>⚠️ Wants spending exceeds 30% - review discretionary spending</li>
+                <li>
+                  ⚠️ Wants spending exceeds 30% - review discretionary spending
+                </li>
               )}
               {currentMonth.categories.savings < totalIncome * 0.2 && (
                 <li>⚠️ Savings below 20% - prioritize saving goals</li>
@@ -113,48 +129,81 @@ function MonthlyDetail() {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-gray-100 w-auto">
+                  <th className="px-4 py-3 text-left text-base font-medium text-gray-900 dark:text-gray-100 w-auto">
                     Name
                   </th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-gray-100 w-32">
+                  <th className="px-4 py-3 text-center text-base font-medium text-gray-900 dark:text-gray-100 w-32">
                     Amount
                   </th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-gray-100 w-48">
+                  <th className="px-4 py-3 text-center text-base font-medium text-gray-900 dark:text-gray-100 w-48">
                     Date
                   </th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-gray-100 w-40">
+                  <th className="px-4 py-3 text-center text-base font-medium text-gray-900 dark:text-gray-100 w-40">
                     Type
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {currentMonth.transactions?.map((transaction, index) => (
-                  <tr key={index}>
-                    <td className="px-4 py-4 dark:text-gray-100 whitespace-normal break-words max-w-[200px]">
-                      {transaction.name}
-                    </td>
-                    <td className={`px-4 py-4 text-center ${
-                      transaction.amount > 0 
-                        ? "text-green-600 dark:text-green-400" 
+            </table>
+            <div className="max-h-[68vh] overflow-y-auto scrollbar-hide">
+              <table className="w-full">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {currentMonth.transactions?.map((transaction, index) => (
+                    <tr key={index}>
+                      <td className="px-4 py-4 dark:text-gray-100 whitespace-normal break-words max-w-[200px] w-auto">
+                        {transaction.name}
+                      </td>
+                      <td
+                        className={`px-4 py-4 text-center w-32 ${
+                          transaction.amount > 0
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-red-600 dark:text-red-400"
+                        }`}
+                      >
+                        ₹{Math.abs(transaction.amount).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-4 dark:text-gray-100 text-center w-48">
+                        {new Date(transaction.date).toLocaleDateString(
+                          "en-IN",
+                          {
+                            month: "long",
+                            day: "2-digit",
+                            year: "numeric",
+                          }
+                        )}
+                      </td>
+                      <td className="px-4 py-4 text-center w-40">
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(
+                            transaction.type
+                          )}`}
+                        >
+                          {transaction.type}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <table className="w-full">
+              <tfoot className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <td className="px-4 py-3 text-sm font-semibold dark:text-gray-100 w-auto text-right">
+                    Total
+                  </td>
+                  <td
+                    className={`px-4 py-3 text-sm text-center font-semibold w-32 ${
+                      currentMonth.balance >= 0
+                        ? "text-green-600 dark:text-green-400"
                         : "text-red-600 dark:text-red-400"
-                    }`}>
-                      ₹{Math.abs(transaction.amount).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-4 dark:text-gray-100 text-center">
-                      {new Date(transaction.date).toLocaleDateString("en-IN", {
-                        month: "long",
-                        day: "2-digit",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(transaction.type)}`}>
-                        {transaction.type}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+                    }`}
+                  >
+                    ₹{Math.abs(currentMonth.balance).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3 w-48"></td>
+                  <td className="px-4 py-3 w-40"></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         </div>
