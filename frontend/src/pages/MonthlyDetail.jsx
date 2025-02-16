@@ -42,20 +42,20 @@ function MonthlyDetail() {
         </button>
       </div>
 
-      <div className="rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="rounded-lg border border-gray-200 dark:border-gray-700 max-w-4xl mx-auto">
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+              <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 dark:text-gray-100 w-auto">
                 Name
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+              <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-gray-100 w-32">
                 Amount
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+              <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-gray-100 w-48">
                 Date
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-900 dark:text-gray-100">
+              <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-gray-100 w-40">
                 Type
               </th>
             </tr>
@@ -63,31 +63,25 @@ function MonthlyDetail() {
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {currentMonth.transactions?.map((transaction, index) => (
               <tr key={index}>
-                <td className="px-6 py-4 dark:text-gray-100">
+                <td className="px-4 py-4 dark:text-gray-100 whitespace-normal break-words max-w-[200px]">
                   {transaction.name}
                 </td>
-                <td
-                  className={`px-6 py-4 ${
-                    transaction.amount > 0
-                      ? "text-green-600 dark:text-green-400"
-                      : "text-red-600 dark:text-red-400"
-                  }`}
-                >
+                <td className={`px-4 py-4 text-center ${
+                  transaction.amount > 0 
+                    ? "text-green-600 dark:text-green-400" 
+                    : "text-red-600 dark:text-red-400"
+                }`}>
                   ₹{Math.abs(transaction.amount).toLocaleString()}
                 </td>
-                <td className="px-6 py-4 dark:text-gray-100">
+                <td className="px-4 py-4 dark:text-gray-100 text-center">
                   {new Date(transaction.date).toLocaleDateString("en-IN", {
                     month: "long",
                     day: "2-digit",
                     year: "numeric",
                   })}
                 </td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(
-                      transaction.type
-                    )}`}
-                  >
+                <td className="px-4 py-4 text-center">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(transaction.type)}`}>
                     {transaction.type}
                   </span>
                 </td>
