@@ -6,7 +6,7 @@ function NewMonthModal({ isOpen, onClose }) {
     new Date().toLocaleString("default", { month: "long" })
   );
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const { addMonth } = useMonths();
+  const { months: existingMonths, addMonth } = useMonths();
 
   const months = [
     "January",
@@ -30,7 +30,7 @@ function NewMonthModal({ isOpen, onClose }) {
     if (!selectedMonth) return;
 
     // Check for existing month/year combination
-    const exists = months.some(
+    const exists = existingMonths.some(
       (m) =>
         m.month.toLowerCase() === selectedMonth.toLowerCase() &&
         m.year === parseInt(selectedYear)
