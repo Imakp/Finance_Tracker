@@ -31,12 +31,12 @@ function MonthlyCard({ month, year, categories, income, balance }) {
         />
         <CircularProgress
           percentage={wantsPercentage}
-          color="brown"
+          color="yellow"
           label="Wants"
         />
         <CircularProgress
           percentage={savingsPercentage}
-          color="gray"
+          color="green"
           label="Savings"
         />
       </div>

@@ -4,9 +4,9 @@ function CircularProgress({ percentage, color, label }) {
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   const colors = {
-    blue: "stroke-blue-500",
-    brown: "stroke-amber-700",
-    gray: "stroke-gray-500",
+    blue: "stroke-blue-400",
+    yellow: "stroke-yellow-400",
+    green: "stroke-green-400",
   };
 
   return (

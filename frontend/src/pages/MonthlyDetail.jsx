@@ -20,12 +20,13 @@ function MonthlyDetail() {
 
   const getCategoryColor = (type) => {
     const colors = {
-      needs: "bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
+      needs: "bg-blue-200 text-blue-800 dark:bg-blue-500 dark:text-sky-50",
       wants:
-        "bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-100",
-      savings: "bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-100",
+        "bg-yellow-200 text-yellow-800 dark:bg-yellow-500 dark:text-lime-50",
+      savings:
+        "bg-green-200 text-green-800 dark:bg-green-500 dark:text-emerald-50",
       income:
-        "bg-purple-200 text-purple-800 dark:bg-purple-900 dark:text-purple-100",
+        "bg-purple-200 text-purple-800 dark:bg-purple-500 dark:text-fuchsia-50",
     };
     return colors[type.toLowerCase()] || "bg-gray-100";
   };
@@ -95,12 +96,20 @@ function MonthlyDetail() {
                         className={`h-full rounded-full ${getCategoryColor(
                           type
                         )}`}
-                        style={{ width: `${Math.min(actualPercentage, 100)}%` }}
+                        style={{
+                          width: `${Math.min(
+                            (
+                              (actualPercentage / targetPercentage) *
+                              100
+                            ).toFixed(2),
+                            100
+                          )}%`,
+                        }}
                       />
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
                       Target: {targetPercentage}% (
-                      {((actualPercentage / targetPercentage) * 100).toFixed(0)}
+                      {((actualPercentage / targetPercentage) * 100).toFixed(2)}
                       % of goal)
                     </div>
                   </div>
