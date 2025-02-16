@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useMonths } from "../contexts/MonthsContext";
 import { useState } from "react";
-import { FiArrowLeft } from "react-icons/fi";
+import { FiArrowLeft, FiPlus } from "react-icons/fi";
 
 function MonthlyDetail() {
   const navigate = useNavigate();
@@ -53,12 +53,21 @@ function MonthlyDetail() {
             {month} {year}
           </h1>
         </div>
-        <button
-          className="bg-blue-500 text-gray-100 px-4 py-2 rounded hover:bg-blue-600"
-          onClick={() => setIsModalOpen(true)}
-        >
-          Add Transaction
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className="hidden md:inline-flex bg-blue-500 text-gray-100 px-4 py-2 rounded hover:bg-blue-600"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Add Transaction
+          </button>
+          <button
+            className="md:hidden p-2 rounded-full bg-blue-500 text-gray-100 hover:bg-blue-600"
+            onClick={() => setIsModalOpen(true)}
+            aria-label="Add transaction"
+          >
+            <FiPlus size={20} />
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -150,93 +159,95 @@ function MonthlyDetail() {
 
         {/* Right Column - Transactions Table */}
         <div className="md:col-span-2">
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-800">
-                <tr>
-                  <th className="px-4 py-3 text-left text-base font-medium text-gray-900 dark:text-gray-100 w-auto">
-                    Name
-                  </th>
-                  <th className="px-4 py-3 text-center text-base font-medium text-gray-900 dark:text-gray-100 w-32">
-                    Amount
-                  </th>
-                  <th className="px-4 py-3 text-center text-base font-medium text-gray-900 dark:text-gray-100 w-48">
-                    Date
-                  </th>
-                  <th className="px-4 py-3 text-center text-base font-medium text-gray-900 dark:text-gray-100 w-40">
-                    Type
-                  </th>
-                </tr>
-              </thead>
-            </table>
-            <div className="max-h-[68vh] overflow-y-auto scrollbar-hide">
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
+            <div className="min-w-[800px]">
               <table className="w-full">
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {currentMonth.transactions?.map((transaction, index) => (
-                    <tr
-                      key={index}
-                      onClick={() => {
-                        setSelectedTransaction(transaction);
-                        setSelectedTransactionIndex(index);
-                      }}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                    >
-                      <td className="px-4 py-4 dark:text-gray-100 whitespace-normal break-words max-w-[200px] w-auto">
-                        {transaction.name}
-                      </td>
-                      <td
-                        className={`px-4 py-4 text-center w-32 ${
-                          transaction.amount > 0
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-red-600 dark:text-red-400"
-                        }`}
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-base font-medium text-gray-900 dark:text-gray-100 w-auto">
+                      Name
+                    </th>
+                    <th className="px-4 py-3 text-center text-base font-medium text-gray-900 dark:text-gray-100 w-32">
+                      Amount
+                    </th>
+                    <th className="px-4 py-3 text-center text-base font-medium text-gray-900 dark:text-gray-100 w-48">
+                      Date
+                    </th>
+                    <th className="px-4 py-3 text-center text-base font-medium text-gray-900 dark:text-gray-100 w-40">
+                      Type
+                    </th>
+                  </tr>
+                </thead>
+              </table>
+              <div className="max-h-[68vh] overflow-y-auto">
+                <table className="w-full">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {currentMonth.transactions?.map((transaction, index) => (
+                      <tr
+                        key={index}
+                        onClick={() => {
+                          setSelectedTransaction(transaction);
+                          setSelectedTransactionIndex(index);
+                        }}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                       >
-                        ₹{Math.abs(transaction.amount).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-4 dark:text-gray-100 text-center w-48">
-                        {new Date(transaction.date).toLocaleDateString(
-                          "en-IN",
-                          {
-                            month: "long",
-                            day: "2-digit",
-                            year: "numeric",
-                          }
-                        )}
-                      </td>
-                      <td className="px-4 py-4 text-center w-40">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(
-                            transaction.type
-                          )}`}
+                        <td className="px-4 py-4 dark:text-gray-100 whitespace-normal break-words max-w-[200px] w-auto">
+                          {transaction.name}
+                        </td>
+                        <td
+                          className={`px-4 py-4 text-center w-32 ${
+                            transaction.amount > 0
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-red-600 dark:text-red-400"
+                          }`}
                         >
-                          {transaction.type}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+                          ₹{Math.abs(transaction.amount).toLocaleString()}
+                        </td>
+                        <td className="px-4 py-4 dark:text-gray-100 text-center w-48">
+                          {new Date(transaction.date).toLocaleDateString(
+                            "en-IN",
+                            {
+                              month: "long",
+                              day: "2-digit",
+                              year: "numeric",
+                            }
+                          )}
+                        </td>
+                        <td className="px-4 py-4 text-center w-40">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(
+                              transaction.type
+                            )}`}
+                          >
+                            {transaction.type}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <table className="w-full">
+                <tfoot className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <td className="px-4 py-3 text-sm font-semibold dark:text-gray-100 w-auto text-right">
+                      Total
+                    </td>
+                    <td
+                      className={`px-4 py-3 text-sm text-center font-semibold w-32 ${
+                        currentMonth.balance >= 0
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-red-600 dark:text-red-400"
+                      }`}
+                    >
+                      ₹{Math.abs(currentMonth.balance).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3 w-48"></td>
+                    <td className="px-4 py-3 w-40"></td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
-            <table className="w-full">
-              <tfoot className="bg-gray-50 dark:bg-gray-800">
-                <tr>
-                  <td className="px-4 py-3 text-sm font-semibold dark:text-gray-100 w-auto text-right">
-                    Total
-                  </td>
-                  <td
-                    className={`px-4 py-3 text-sm text-center font-semibold w-32 ${
-                      currentMonth.balance >= 0
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-red-600 dark:text-red-400"
-                    }`}
-                  >
-                    ₹{Math.abs(currentMonth.balance).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3 w-48"></td>
-                  <td className="px-4 py-3 w-40"></td>
-                </tr>
-              </tfoot>
-            </table>
           </div>
         </div>
       </div>

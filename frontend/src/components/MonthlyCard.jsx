@@ -17,7 +17,7 @@ function MonthlyCard({ month, year, categories, income, balance }) {
   return (
     <Link
       to={`/${year}/${month.toLowerCase()}`}
-      className="block p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg dark:hover:shadow-lg dark:hover:shadow-slate-700 transition-shadow active:scale-95 sm:active:scale-100 transition-transform"
+      className="block p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg dark:hover:shadow-lg dark:hover:shadow-gray-700 transition-shadow active:scale-95 sm:active:scale-100 transition-transform"
     >
       <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 capitalize text-gray-900 dark:text-gray-100">
         {month} {year}
@@ -57,7 +57,9 @@ function MonthlyCard({ month, year, categories, income, balance }) {
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Remaining:</span>
+          <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+            Remaining:
+          </span>
           <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
             ₹{balance.toLocaleString()}
           </span>
