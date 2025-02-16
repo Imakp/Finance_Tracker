@@ -6,8 +6,11 @@ import { FiArrowLeft } from "react-icons/fi";
 function MonthlyDetail() {
   const navigate = useNavigate();
   const { year, month } = useParams();
-  const { months, addTransaction } = useMonths();
+  const { months, addTransaction, updateTransaction, deleteTransaction } =
+    useMonths();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [selectedTransactionIndex, setSelectedTransactionIndex] = useState(-1);
 
   const currentMonth = months.find(
     (m) =>
@@ -170,7 +173,14 @@ function MonthlyDetail() {
               <table className="w-full">
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {currentMonth.transactions?.map((transaction, index) => (
-                    <tr key={index}>
+                    <tr
+                      key={index}
+                      onClick={() => {
+                        setSelectedTransaction(transaction);
+                        setSelectedTransactionIndex(index);
+                      }}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                    >
                       <td className="px-4 py-4 dark:text-gray-100 whitespace-normal break-words max-w-[200px] w-auto">
                         {transaction.name}
                       </td>
@@ -317,6 +327,121 @@ function MonthlyDetail() {
                 >
                   Add
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {selectedTransaction && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md dark:text-gray-100">
+            <h2 className="text-xl font-bold mb-4">Edit Transaction</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const updatedTransaction = {
+                  name: formData.get("name"),
+                  amount: parseFloat(formData.get("amount")),
+                  date: formData.get("date"),
+                  type: formData.get("type"),
+                };
+
+                // Preserve amount sign based on type
+                updatedTransaction.amount =
+                  updatedTransaction.type === "income"
+                    ? Math.abs(updatedTransaction.amount)
+                    : -Math.abs(updatedTransaction.amount);
+
+                updateTransaction(
+                  parseInt(year),
+                  month,
+                  selectedTransactionIndex,
+                  updatedTransaction
+                );
+                setSelectedTransaction(null);
+              }}
+            >
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Name</label>
+                <input
+                  name="name"
+                  type="text"
+                  required
+                  defaultValue={selectedTransaction?.name}
+                  className="w-full p-2 border rounded-md dark:bg-gray-700"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Amount</label>
+                <input
+                  name="amount"
+                  type="number"
+                  step="0.01"
+                  required
+                  defaultValue={Math.abs(selectedTransaction?.amount)}
+                  className="w-full p-2 border rounded-md dark:bg-gray-700"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Date</label>
+                <input
+                  name="date"
+                  type="date"
+                  required
+                  defaultValue={
+                    new Date(selectedTransaction.date)
+                      .toISOString()
+                      .split("T")[0]
+                  }
+                  className="w-full p-2 border rounded-md dark:bg-gray-700"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Type</label>
+                <select
+                  name="type"
+                  required
+                  defaultValue={selectedTransaction.type}
+                  className="w-full p-2 border rounded-md dark:bg-gray-700"
+                >
+                  <option value="income">Income</option>
+                  <option value="needs">Needs</option>
+                  <option value="wants">Wants</option>
+                  <option value="savings">Savings</option>
+                </select>
+              </div>
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={() => {
+                    deleteTransaction(
+                      parseInt(year),
+                      month,
+                      selectedTransactionIndex
+                    );
+                    setSelectedTransaction(null);
+                  }}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  Delete
+                </button>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTransaction(null)}
+                    className="px-4 py-2 text-gray-600 dark:text-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Update
+                  </button>
+                </div>
               </div>
             </form>
           </div>

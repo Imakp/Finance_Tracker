@@ -74,8 +74,95 @@ export function MonthsProvider({ children }) {
     );
   };
 
+  const updateTransaction = (year, month, index, updatedTransaction) => {
+    setMonths((prev) =>
+      prev.map((m) => {
+        if (m.year === year && m.month.toLowerCase() === month.toLowerCase()) {
+          const transactions = [...m.transactions];
+          transactions[index] = updatedTransaction;
+
+          // Recalculate totals
+          const totals = transactions.reduce(
+            (acc, t) => {
+              const transAmount = Math.abs(t.amount);
+              if (t.type === "income") {
+                acc.income += transAmount;
+              } else {
+                acc.categories[t.type] =
+                  (acc.categories[t.type] || 0) + transAmount;
+              }
+              acc.balance += t.amount;
+              return acc;
+            },
+            {
+              income: 0,
+              categories: { needs: 0, wants: 0, savings: 0 },
+              balance: 0,
+            }
+          );
+
+          return {
+            ...m,
+            transactions,
+            income: totals.income,
+            categories: totals.categories,
+            balance: totals.balance,
+          };
+        }
+        return m;
+      })
+    );
+  };
+
+  const deleteTransaction = (year, month, index) => {
+    setMonths((prev) =>
+      prev.map((m) => {
+        if (m.year === year && m.month.toLowerCase() === month.toLowerCase()) {
+          const transactions = m.transactions.filter((_, i) => i !== index);
+
+          // Recalculate totals
+          const totals = transactions.reduce(
+            (acc, t) => {
+              const transAmount = Math.abs(t.amount);
+              if (t.type === "income") {
+                acc.income += transAmount;
+              } else {
+                acc.categories[t.type] =
+                  (acc.categories[t.type] || 0) + transAmount;
+              }
+              acc.balance += t.amount;
+              return acc;
+            },
+            {
+              income: 0,
+              categories: { needs: 0, wants: 0, savings: 0 },
+              balance: 0,
+            }
+          );
+
+          return {
+            ...m,
+            transactions,
+            income: totals.income,
+            categories: totals.categories,
+            balance: totals.balance,
+          };
+        }
+        return m;
+      })
+    );
+  };
+
   return (
-    <MonthsContext.Provider value={{ months, addMonth, addTransaction }}>
+    <MonthsContext.Provider
+      value={{
+        months,
+        addMonth,
+        addTransaction,
+        updateTransaction,
+        deleteTransaction,
+      }}
+    >
       {children}
     </MonthsContext.Provider>
   );
