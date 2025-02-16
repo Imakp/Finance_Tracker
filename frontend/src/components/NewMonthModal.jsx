@@ -29,7 +29,6 @@ function NewMonthModal({ isOpen, onClose }) {
     e.preventDefault();
     if (!selectedMonth) return;
 
-    // Check for existing month/year combination
     const exists = existingMonths.some(
       (m) =>
         m.month.toLowerCase() === selectedMonth.toLowerCase() &&
@@ -59,21 +58,29 @@ function NewMonthModal({ isOpen, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md dark:text-gray-100">
-        <h2 className="text-xl font-bold mb-4 dark:text-gray-100">
-          Create New Month
-        </h2>
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4 sm:p-6 md:p-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md mx-auto overflow-hidden shadow-xl">
+        {/* Header */}
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
+            Create New Month
+          </h2>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
+          <div>
+            <label
+              htmlFor="year-select"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Select Year
             </label>
             <select
+              id="year-select"
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+              className="w-full h-12 px-3 py-2 text-base border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
             >
               {Array.from(
                 { length: 5 },
@@ -86,14 +93,18 @@ function NewMonthModal({ isOpen, onClose }) {
             </select>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <div>
+            <label
+              htmlFor="month-select"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Select Month
             </label>
             <select
+              id="month-select"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+              className="w-full h-12 px-3 py-2 text-base border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
             >
               {months.map((month) => (
                 <option key={month} value={month}>
@@ -103,17 +114,18 @@ function NewMonthModal({ isOpen, onClose }) {
             </select>
           </div>
 
-          <div className="flex justify-end gap-4">
+          {/* Footer with buttons */}
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:gap-4 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200"
+              className="w-full sm:w-auto px-4 py-3 sm:py-2 text-center text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-500 text-gray-100 rounded hover:bg-blue-600 dark:hover:bg-blue-600"
+              className="w-full sm:w-auto px-4 py-3 sm:py-2 text-center text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
             >
               Create
             </button>
