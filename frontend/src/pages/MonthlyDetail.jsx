@@ -293,6 +293,7 @@ function MonthlyDetail() {
                 <input
                   name="date"
                   type="date"
+                  defaultValue={new Date().toISOString().split("T")[0]}
                   className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 />
               </div>
