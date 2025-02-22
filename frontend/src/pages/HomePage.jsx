@@ -1,8 +1,25 @@
-import { useMonths } from "../contexts/MonthsContext";
+import { useEffect, useState } from "react";
 import MonthlyCard from "../components/MonthlyCard";
 
 function HomePage() {
-  const { months } = useMonths();
+  const [months, setMonths] = useState([]);
+
+  useEffect(() => {
+    const fetchMonths = async () => {
+      try {
+        const response = await fetch('/api/months');
+        if (!response.ok) {
+          throw new Error('Failed to fetch months');
+        }
+        const data = await response.json();
+        setMonths(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchMonths();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -18,11 +35,8 @@ function HomePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {months.map((monthData) => (
-            <div className="transform transition duration-200 hover:scale-102 hover:shadow-lg">
-              <MonthlyCard
-                key={`${monthData.month}-${monthData.year}`}
-                {...monthData}
-              />
+            <div className="transform transition duration-200 hover:scale-102 hover:shadow-lg" key={`${monthData.month}-${monthData.year}`}>
+              <MonthlyCard {...monthData} />
             </div>
           ))}
         </div>

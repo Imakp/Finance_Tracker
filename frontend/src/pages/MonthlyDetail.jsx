@@ -1,21 +1,50 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useEffect, useState } from "react";
 import { useMonths } from "../contexts/MonthsContext";
-import { useState } from "react";
-import { FiArrowLeft, FiPlus } from "react-icons/fi";
+import { FiArrowLeft, FiPlus, FiTrash } from "react-icons/fi";
+import EditMonthModal from "../components/EditMonthModal";
 
 function MonthlyDetail() {
   const navigate = useNavigate();
   const { year, month } = useParams();
-  const { months, addTransaction, updateTransaction, deleteTransaction } =
-    useMonths();
+  const { addTransaction, updateTransaction, deleteTransaction } = useMonths();
+  const [currentMonth, setCurrentMonth] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [selectedTransactionIndex, setSelectedTransactionIndex] = useState(-1);
 
-  const currentMonth = months.find(
-    (m) =>
-      m.month.toLowerCase() === month.toLowerCase() && m.year === parseInt(year)
-  );
+  useEffect(() => {
+    const fetchMonth = async () => {
+      try {
+        const response = await fetch(`/api/months/${year}/${month}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch month');
+        }
+        const data = await response.json();
+        setCurrentMonth(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchMonth();
+  }, [year, month]);
+
+  const handleDeleteMonth = async () => {
+    try {
+      const response = await fetch(`/api/months/${year}/${month}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete month');
+      }
+
+      navigate('/'); // Redirect to home after deletion
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
   if (!currentMonth) {
     return <div className="container mx-auto px-4 pt-20">Month not found</div>;
@@ -35,6 +64,28 @@ function MonthlyDetail() {
   };
 
   const totalIncome = currentMonth.income || 1;
+
+  const handleEditMonth = async (updatedData) => {
+    try {
+      const response = await fetch(`/api/months/${year}/${month}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update month');
+      }
+
+      const updatedMonth = await response.json();
+      setCurrentMonth(updatedMonth);
+      setIsEditModalOpen(false);
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 pt-20 pb-8">
@@ -66,6 +117,19 @@ function MonthlyDetail() {
             aria-label="Add transaction"
           >
             <FiPlus size={20} />
+          </button>
+          <button
+            className="bg-red-500 text-gray-100 px-4 py-2 rounded hover:bg-red-600"
+            onClick={handleDeleteMonth}
+          >
+            <FiTrash size={20} />
+            Delete Month
+          </button>
+          <button
+            className="bg-green-500 text-gray-100 px-4 py-2 rounded hover:bg-green-600"
+            onClick={() => setIsEditModalOpen(true)}
+          >
+            Edit Month
           </button>
         </div>
       </div>
@@ -343,6 +407,16 @@ function MonthlyDetail() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Edit Month Modal */}
+      {isEditModalOpen && (
+        <EditMonthModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          currentMonth={currentMonth}
+          onUpdate={handleEditMonth}
+        />
       )}
 
       {selectedTransaction && (

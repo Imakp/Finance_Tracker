@@ -6,7 +6,7 @@ function NewMonthModal({ isOpen, onClose }) {
     new Date().toLocaleString("default", { month: "long" })
   );
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const { months: existingMonths, addMonth } = useMonths();
+  const { addMonth } = useMonths();
 
   const months = [
     "January",
@@ -25,36 +25,34 @@ function NewMonthModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedMonth) return;
-
-    const exists = existingMonths.some(
-      (m) =>
-        m.month.toLowerCase() === selectedMonth.toLowerCase() &&
-        m.year === parseInt(selectedYear)
-    );
-
-    if (exists) {
-      alert("This month/year combination already exists!");
-      return;
-    }
 
     const monthData = {
       month: selectedMonth,
       year: parseInt(selectedYear),
-      categories: {
-        needs: 0,
-        wants: 0,
-        savings: 0,
-      },
-      income: 0,
-      balance: 0,
-      transactions: [],
     };
 
-    addMonth(monthData);
-    onClose();
+    try {
+      const response = await fetch('/api/months', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(monthData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create month');
+      }
+
+      const newMonth = await response.json();
+      addMonth(newMonth);
+      onClose();
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   return (
