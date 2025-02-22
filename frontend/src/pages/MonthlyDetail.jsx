@@ -12,6 +12,7 @@ function MonthlyDetail() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [selectedTransactionIndex, setSelectedTransactionIndex] = useState(-1);
+  const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
     const fetchMonth = async () => {
@@ -29,6 +30,23 @@ function MonthlyDetail() {
 
     fetchMonth();
   }, [year, month]);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await fetch(`/api/months/${year}/${month}/transactions`);
+        if (!response.ok) throw new Error('Failed to fetch transactions');
+        const data = await response.json();
+        setTransactions(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    
+    if (currentMonth) {
+      fetchTransactions();
+    }
+  }, [currentMonth, year, month]);
 
   const handleDeleteMonth = async () => {
     try {
@@ -82,6 +100,71 @@ function MonthlyDetail() {
       const updatedMonth = await response.json();
       setCurrentMonth(updatedMonth);
       setIsEditModalOpen(false);
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  const handleAddTransaction = async (transaction) => {
+    try {
+      const response = await fetch(`/api/months/${year}/${month}/transactions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transaction),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add transaction');
+      }
+
+      // Refetch transactions after adding
+      const newTransaction = await response.json();
+      setTransactions((prev) => [...prev, newTransaction]);
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  const handleUpdateTransaction = async (transactionId, updatedTransaction) => {
+    try {
+      const response = await fetch(`/api/months/${year}/${month}/transactions/${transactionId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedTransaction),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update transaction');
+      }
+
+      // Refetch transactions after updating
+      const updatedTrans = await response.json();
+      setTransactions((prev) =>
+        prev.map((transaction) =>
+          transaction._id === updatedTrans._id ? updatedTrans : transaction
+        )
+      );
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  const handleDeleteTransaction = async (transactionId) => {
+    try {
+      const response = await fetch(`/api/months/${year}/${month}/transactions/${transactionId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete transaction');
+      }
+
+      // Remove the deleted transaction from the state
+      setTransactions((prev) => prev.filter((transaction) => transaction._id !== transactionId));
     } catch (error) {
       alert(error.message);
     }
@@ -246,7 +329,7 @@ function MonthlyDetail() {
               <div className="max-h-[68vh] overflow-y-auto">
                 <table className="w-full">
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {currentMonth.transactions?.map((transaction, index) => (
+                    {transactions.map((transaction, index) => (
                       <tr
                         key={index}
                         onClick={() => {
@@ -326,13 +409,13 @@ function MonthlyDetail() {
               onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
-
-                addTransaction(parseInt(year), month, {
+                const newTransaction = {
                   name: formData.get("name"),
                   amount: parseFloat(formData.get("amount")),
                   date: formData.get("date") || new Date().toISOString(),
                   type: formData.get("type"),
-                });
+                };
+                handleAddTransaction(newTransaction);
                 setIsModalOpen(false);
               }}
             >
@@ -434,18 +517,8 @@ function MonthlyDetail() {
                   type: formData.get("type"),
                 };
 
-                // Preserve amount sign based on type
-                updatedTransaction.amount =
-                  updatedTransaction.type === "income"
-                    ? Math.abs(updatedTransaction.amount)
-                    : -Math.abs(updatedTransaction.amount);
-
-                updateTransaction(
-                  parseInt(year),
-                  month,
-                  selectedTransactionIndex,
-                  updatedTransaction
-                );
+                // Call the handleUpdateTransaction function
+                handleUpdateTransaction(selectedTransaction._id, updatedTransaction);
                 setSelectedTransaction(null);
               }}
             >
@@ -502,11 +575,7 @@ function MonthlyDetail() {
                 <button
                   type="button"
                   onClick={() => {
-                    deleteTransaction(
-                      parseInt(year),
-                      month,
-                      selectedTransactionIndex
-                    );
+                    handleDeleteTransaction(selectedTransaction._id);
                     setSelectedTransaction(null);
                   }}
                   className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
