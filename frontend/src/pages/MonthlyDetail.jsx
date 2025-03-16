@@ -1,6 +1,7 @@
-import { useParams, useNavigate, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useMonths } from "../contexts/MonthsContext";
-import { FiArrowLeft, FiPlus, FiTrash } from "react-icons/fi";
+import { FiArrowLeft, FiPlus } from "react-icons/fi";
 import EditMonthModal from "../components/EditMonthModal";
 
 function MonthlyDetail() {
@@ -205,7 +206,6 @@ function MonthlyDetail() {
             className="bg-red-500 text-gray-100 px-4 py-2 rounded hover:bg-red-600"
             onClick={handleDeleteMonth}
           >
-            <FiTrash size={20} />
             Delete Month
           </button>
           <button

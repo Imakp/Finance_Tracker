@@ -1,25 +1,31 @@
 import { createContext, useState, useContext, useEffect } from "react";
+import axios from "axios";
 
 const MonthsContext = createContext();
 
 export function MonthsProvider({ children }) {
-  const [months, setMonths] = useState(() => {
-    const saved = localStorage.getItem("months");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [months, setMonths] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("months", JSON.stringify(months));
-  }, [months]);
+    const fetchMonths = async () => {
+      try {
+        const response = await axios.get('/api/months');
+        setMonths(response.data);
+      } catch (error) {
+        console.error('Error fetching months:', error);
+      }
+    };
+    fetchMonths();
+  }, []);
 
-  const addMonth = (monthData) => {
-    setMonths((prevMonths) => [
-      ...prevMonths,
-      {
-        ...monthData,
-        transactions: [],
-      },
-    ]);
+  const addMonth = async (monthData) => {
+    try {
+      const response = await axios.post('/api/months', monthData);
+      setMonths(prevMonths => [...prevMonths, response.data]);
+    } catch (error) {
+      console.error('Error creating month:', error);
+      throw error;
+    }
   };
 
   const addTransaction = (year, month, transaction) => {

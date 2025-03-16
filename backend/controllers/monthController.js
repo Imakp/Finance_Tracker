@@ -26,8 +26,17 @@ export const getMonth = async (req, res) => {
 
 export const createMonth = async (req, res) => {
   try {
+    const { year, month } = req.body;
+    
+    // Check if month already exists
+    const existingMonth = await Month.findOne({ year, month });
+    if (existingMonth) {
+      return res.status(400).json({ message: 'Month already exists' });
+    }
+
     const newMonth = new Month({
-      ...req.body,
+      year,
+      month,
       categories: { needs: 0, wants: 0, savings: 0 },
       income: 0,
       balance: 0,
@@ -35,7 +44,8 @@ export const createMonth = async (req, res) => {
     });
     
     const savedMonth = await newMonth.save();
-    res.status(201).json(savedMonth);
+    const populatedMonth = await Month.findById(savedMonth._id).populate('transactions');
+    res.status(201).json(populatedMonth);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -71,4 +81,4 @@ export const deleteMonth = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}; 
+};
