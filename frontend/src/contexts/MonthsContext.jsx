@@ -9,10 +9,10 @@ export function MonthsProvider({ children }) {
   useEffect(() => {
     const fetchMonths = async () => {
       try {
-        const response = await axios.get('/api/months');
+        const response = await axios.get("/api/months");
         setMonths(response.data);
       } catch (error) {
-        console.error('Error fetching months:', error);
+        console.error("Error fetching months:", error);
       }
     };
     fetchMonths();
@@ -20,10 +20,21 @@ export function MonthsProvider({ children }) {
 
   const addMonth = async (monthData) => {
     try {
-      const response = await axios.post('/api/months', monthData);
-      setMonths(prevMonths => [...prevMonths, response.data]);
+      const response = await axios.post("/api/months", monthData);
+      const newMonth = {
+        ...response.data,
+        transactions: [],
+        income: 0,
+        categories: {
+          needs: 0,
+          wants: 0,
+          savings: 0,
+        },
+        balance: 0,
+      };
+      setMonths((prevMonths) => [...prevMonths, newMonth]);
     } catch (error) {
-      console.error('Error creating month:', error);
+      console.error("Error creating month:", error);
       throw error;
     }
   };

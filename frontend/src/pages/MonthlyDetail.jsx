@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useMonths } from "../contexts/MonthsContext";
-import { FiArrowLeft, FiPlus } from "react-icons/fi";
+import { FiArrowLeft, FiPlus, FiTrash2, FiEdit } from "react-icons/fi";
 import EditMonthModal from "../components/EditMonthModal";
 
 function MonthlyDetail() {
@@ -190,29 +190,25 @@ function MonthlyDetail() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            className="hidden md:inline-flex bg-blue-500 text-gray-100 px-4 py-2 rounded hover:bg-blue-600"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Add Transaction
-          </button>
-          <button
-            className="md:hidden p-2 rounded-full bg-blue-500 text-gray-100 hover:bg-blue-600"
+            className="p-2 rounded-full bg-blue-500 text-gray-100 hover:bg-blue-600"
             onClick={() => setIsModalOpen(true)}
             aria-label="Add transaction"
           >
             <FiPlus size={20} />
           </button>
           <button
-            className="bg-red-500 text-gray-100 px-4 py-2 rounded hover:bg-red-600"
+            className="p-2 rounded-full bg-red-500 text-gray-100 hover:bg-red-600"
             onClick={handleDeleteMonth}
+            aria-label="Delete month"
           >
-            Delete Month
+            <FiTrash2 size={20} />
           </button>
           <button
-            className="bg-green-500 text-gray-100 px-4 py-2 rounded hover:bg-green-600"
+            className="p-2 rounded-full bg-green-500 text-gray-100 hover:bg-green-600"
             onClick={() => setIsEditModalOpen(true)}
+            aria-label="Edit month"
           >
-            Edit Month
+            <FiEdit size={20} />
           </button>
         </div>
       </div>
