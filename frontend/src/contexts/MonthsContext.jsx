@@ -193,14 +193,29 @@ export function MonthsProvider({ children }) {
     );
   };
 
+  // Function to delete a month from the state
+  const deleteMonth = (year, month) => {
+    setMonths((prev) =>
+      prev.filter(
+        (m) =>
+          !(
+            m.year === parseInt(year, 10) &&
+            m.month.toLowerCase() === month.toLowerCase()
+          )
+      )
+    );
+  };
+
   return (
     <MonthsContext.Provider
       value={{
         months,
         addMonth,
+        addMonth, // Ensure addMonth is included if it wasn't before
         addTransaction,
         updateTransaction,
         deleteTransaction,
+        deleteMonth, // Add the new deleteMonth function
       }}
     >
       {children}

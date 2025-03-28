@@ -9,8 +9,13 @@ function MonthlyDetail() {
   const navigate = useNavigate();
   const { year, month } = useParams();
   // Get full context including months array and functions
-  const { months, addTransaction, updateTransaction, deleteTransaction } =
-    useMonths();
+  const {
+    months,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    deleteMonth, // Add deleteMonth here
+  } = useMonths();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -33,8 +38,8 @@ function MonthlyDetail() {
     try {
       // Assuming deletion should also update context if HomePage uses it
       await axios.delete(`/api/months/${year}/${month}`);
-      // TODO: Add deleteMonth function to context and call it here
-      // deleteMonth(year, month); // Example call
+      // Call the context function to update the state
+      deleteMonth(year, month);
       navigate("/"); // Redirect to home after deletion
     } catch (error) {
       console.error("Error deleting month:", error);
