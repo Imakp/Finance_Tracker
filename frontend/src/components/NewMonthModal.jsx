@@ -35,16 +35,16 @@ function NewMonthModal({ isOpen, onClose }) {
     };
 
     try {
-      const response = await fetch('/api/months', {
-        method: 'POST',
+      const response = await fetch("/api/months", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(monthData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create month');
+        throw new Error("Failed to create month");
       }
 
       const newMonth = await response.json();

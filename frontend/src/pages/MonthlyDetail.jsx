@@ -1,58 +1,78 @@
-import { useState, useMemo } from "react"; // Removed useEffect, added useMemo
+import { useState } from "react"; // Removed useMemo
 import { useParams, useNavigate } from "react-router-dom";
-import { useMonths } from "../contexts/MonthsContext";
+import { useMonths } from "../contexts/MonthsContext"; // Keep for deleteMonth
+import { useMonthlyDetail } from "../contexts/MonthlyDetailContext"; // Import the new context hook
 import { FiArrowLeft, FiPlus, FiTrash2, FiEdit } from "react-icons/fi";
 import EditMonthModal from "../components/EditMonthModal";
-import axios from "axios"; // Import axios
+import axios from "axios";
+// Removed axios import as context handles API calls
 
 function MonthlyDetail() {
   const navigate = useNavigate();
   const { year, month } = useParams();
-  // Get full context including months array and functions
+  const { deleteMonth } = useMonths(); // Only need deleteMonth from global context
   const {
-    months,
+    currentMonthDetail: currentMonth, // Rename for consistency
+    loading,
+    error,
     addTransaction,
     updateTransaction,
     deleteTransaction,
-    deleteMonth, // Add deleteMonth here
-  } = useMonths();
+    updateMonthDetails, // Use context function for updating month
+  } = useMonthlyDetail(); // Use the new context
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [selectedTransactionIndex, setSelectedTransactionIndex] = useState(-1); // Keep track of index for context functions
+  // Removed selectedTransactionIndex as context refetches
 
-  // Find the current month data from the context
-  const currentMonth = useMemo(() => {
-    const numericYear = parseInt(year, 10);
-    return months.find(
-      (m) =>
-        m.year === numericYear && m.month.toLowerCase() === month.toLowerCase()
-    );
-  }, [months, year, month]);
-
-  // Get transactions directly from the derived currentMonth
+  // Get transactions directly from the context's currentMonthDetail
   const transactions = currentMonth?.transactions || [];
 
-  // TODO: Implement delete month in context if needed, or keep API call here
   const handleDeleteMonth = async () => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete the data for ${month} ${year}? This action cannot be undone.`
+      )
+    ) {
+      return;
+    }
     try {
-      // Assuming deletion should also update context if HomePage uses it
+      // Still need direct API call here as it's a destructive action affecting the list
       await axios.delete(`/api/months/${year}/${month}`);
-      // Call the context function to update the state
+      // Call the global context function to update the main list state
       deleteMonth(year, month);
       navigate("/"); // Redirect to home after deletion
-    } catch (error) {
-      console.error("Error deleting month:", error);
-      alert(error.message);
+    } catch (err) {
+      // Use err consistently
+      console.error("Error deleting month:", err);
+      alert(
+        err.response?.data?.message || err.message || "Failed to delete month."
+      );
     }
   };
 
-  // Show loading or not found if month data isn't available yet from context
-  if (!currentMonth) {
-    // Could add a loading indicator here
+  // Handle loading and error states from context
+  if (loading) {
     return (
-      <div className="container mx-auto px-4 pt-20">
-        Loading month data or month not found...
+      <div className="container mx-auto px-4 pt-20 text-center dark:text-gray-100">
+        Loading month details...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 pt-20 text-center text-red-600 dark:text-red-400">
+        Error: {error}
+      </div>
+    );
+  }
+
+  if (!currentMonth) {
+    return (
+      <div className="container mx-auto px-4 pt-20 text-center dark:text-gray-100">
+        Month data not found for {month} {year}.
       </div>
     );
   }
@@ -70,84 +90,61 @@ function MonthlyDetail() {
     return colors[type.toLowerCase()] || "bg-gray-100";
   };
 
-  const totalIncome = currentMonth.income || 1;
+  // Use income from context data, provide default for calculation safety
+  const totalIncome = currentMonth.income || 1; // Use 1 to avoid division by zero
 
-  // TODO: Implement update month in context if needed
+  // Use context's updateMonthDetails
   const handleEditMonth = async (updatedData) => {
     try {
-      const response = await axios.put(
-        `/api/months/${year}/${month}`,
-        updatedData
-      );
-      // TODO: Add updateMonth function to context and call it here
-      // updateMonth(year, month, response.data); // Example call
-      // For now, rely on context re-render if HomePage needs update,
-      // but local view might need direct update if context doesn't handle month details yet
-      // setCurrentMonth(response.data); // Removed as currentMonth comes from context
+      await updateMonthDetails(updatedData); // Call context function
       setIsEditModalOpen(false);
-    } catch (error) {
-      console.error("Error updating month:", error);
-      alert(error.message);
+    } catch (err) {
+      // Use err consistently
+      console.error("Error updating month:", err);
+      alert(err.message || "Failed to update month details."); // Show error from context/axios
     }
   };
 
   // Use context's addTransaction
-  const handleAddTransaction = async (transaction) => {
+  const handleAddTransaction = async (transactionData) => {
     try {
-      const response = await axios.post(
-        `/api/months/${year}/${month}/transactions`,
-        transaction
-      );
-      // Call context function with the transaction returned from backend (includes _id)
-      addTransaction(currentMonth.year, currentMonth.month, response.data);
+      await addTransaction(transactionData); // Call context function
       setIsModalOpen(false); // Close modal on success
-    } catch (error) {
-      console.error("Error adding transaction:", error);
-      alert(error.message);
+    } catch (err) {
+      console.error("Error adding transaction:", err);
+      alert(err.message || "Failed to add transaction."); // Show error from context/axios
     }
   };
 
   // Use context's updateTransaction
   const handleUpdateTransaction = async (
     transactionId,
-    transactionIndex,
     updatedTransactionData
   ) => {
     try {
-      const response = await axios.put(
-        `/api/months/${year}/${month}/transactions/${transactionId}`,
-        updatedTransactionData
-      );
-      // Call context function with the index and the updated transaction from backend
-      updateTransaction(
-        currentMonth.year,
-        currentMonth.month,
-        transactionIndex,
-        response.data
-      );
-      setSelectedTransaction(null); // Close edit modal
-    } catch (error) {
-      console.error("Error updating transaction:", error);
-      alert(error.message);
+      await updateTransaction(transactionId, updatedTransactionData); // Call context function
+      setSelectedTransaction(null); // Close edit modal on success
+    } catch (err) {
+      console.error("Error updating transaction:", err);
+      alert(err.message || "Failed to update transaction."); // Show error from context/axios
     }
   };
 
   // Use context's deleteTransaction
-  const handleDeleteTransaction = async (transactionId, transactionIndex) => {
+  const handleDeleteTransaction = async (transactionId) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete this transaction? This action cannot be undone.`
+      )
+    ) {
+      return;
+    }
     try {
-      await axios.delete(
-        `/api/months/${year}/${month}/transactions/${transactionId}`
-      );
-      // Call context function with the index
-      deleteTransaction(
-        currentMonth.year,
-        currentMonth.month,
-        transactionIndex
-      );
+      await deleteTransaction(transactionId); // Call context function
       setSelectedTransaction(null); // Close edit modal if open
-    } catch (error) {
-      console.error("Error deleting transaction:", error);
-      alert(error.message);
+    } catch (err) {
+      console.error("Error deleting transaction:", err);
+      alert(err.message || "Failed to delete transaction."); // Show error from context/axios
     }
   };
 
@@ -307,10 +304,10 @@ function MonthlyDetail() {
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {transactions.map((transaction, index) => (
                       <tr
-                        key={transaction._id || index} // Use _id if available, fallback to index
+                        key={transaction._id} // Use _id from backend data
                         onClick={() => {
                           setSelectedTransaction(transaction);
-                          setSelectedTransactionIndex(index); // Store index for context updates
+                          // Removed setSelectedTransactionIndex
                         }}
                         className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                       >
@@ -486,20 +483,20 @@ function MonthlyDetail() {
               onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
-                const updatedTransaction = {
+                const updatedTransactionData = {
+                  // Rename for clarity
                   name: formData.get("name"),
-                  amount: parseFloat(formData.get("amount")),
+                  // Ensure amount is positive, type determines sign in backend/context logic if needed
+                  amount: Math.abs(parseFloat(formData.get("amount"))),
                   date: formData.get("date"),
                   type: formData.get("type"),
                 };
 
-                // Pass index along with ID and data
+                // Pass only ID and data, context handles the rest
                 handleUpdateTransaction(
                   selectedTransaction._id,
-                  selectedTransactionIndex,
-                  updatedTransaction
+                  updatedTransactionData
                 );
-                // setSelectedTransaction(null); // Moved inside handleUpdateTransaction success
               }}
             >
               <div className="mb-4">
@@ -555,12 +552,8 @@ function MonthlyDetail() {
                 <button
                   type="button"
                   onClick={() => {
-                    // Pass index along with ID
-                    handleDeleteTransaction(
-                      selectedTransaction._id,
-                      selectedTransactionIndex
-                    );
-                    // setSelectedTransaction(null); // Moved inside handleDeleteTransaction success
+                    // Pass only ID
+                    handleDeleteTransaction(selectedTransaction._id);
                   }}
                   className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                 >

@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import MonthlyDetail from "./pages/MonthlyDetail";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { MonthsProvider } from "./contexts/MonthsContext";
+import { MonthlyDetailProvider } from "./contexts/MonthlyDetailContext"; // Import the new provider
 
 function App() {
   return (
@@ -15,7 +16,15 @@ function App() {
             <main className="content">
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/:year/:month" element={<MonthlyDetail />} />
+                {/* Wrap MonthlyDetail route with its provider */}
+                <Route
+                  path="/:year/:month"
+                  element={
+                    <MonthlyDetailProvider>
+                      <MonthlyDetail />
+                    </MonthlyDetailProvider>
+                  }
+                />
               </Routes>
             </main>
           </div>

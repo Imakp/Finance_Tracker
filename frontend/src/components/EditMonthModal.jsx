@@ -21,7 +21,10 @@ function EditMonthModal({ isOpen, onClose, currentMonth, onUpdate }) {
         </div>
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
           <div>
-            <label htmlFor="year" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="year"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Year
             </label>
             <input
@@ -34,7 +37,10 @@ function EditMonthModal({ isOpen, onClose, currentMonth, onUpdate }) {
             />
           </div>
           <div>
-            <label htmlFor="month" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="month"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Month
             </label>
             <input
@@ -47,10 +53,17 @@ function EditMonthModal({ isOpen, onClose, currentMonth, onUpdate }) {
             />
           </div>
           <div className="flex justify-end gap-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200"
+            >
               Cancel
             </button>
-            <button type="submit" className="px-4 py-2 bg-blue-500 text-gray-100 rounded hover:bg-blue-600">
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-gray-100 rounded hover:bg-blue-600"
+            >
               Update
             </button>
           </div>
@@ -60,4 +73,4 @@ function EditMonthModal({ isOpen, onClose, currentMonth, onUpdate }) {
   );
 }
 
-export default EditMonthModal; 
+export default EditMonthModal;
