@@ -18,25 +18,48 @@ export function MonthsProvider({ children }) {
     fetchMonths();
   }, []);
 
-  const addMonth = async (monthData) => {
-    try {
-      const response = await axios.post("/api/months", monthData);
-      const newMonth = {
-        ...response.data,
-        transactions: [],
-        income: 0,
-        categories: {
-          needs: 0,
-          wants: 0,
-          savings: 0,
-        },
-        balance: 0,
-      };
-      setMonths((prevMonths) => [...prevMonths, newMonth]);
-    } catch (error) {
-      console.error("Error creating month:", error);
-      throw error;
-    }
+  // Accepts the newly created month object from the backend response
+  const addMonth = (newMonthData) => {
+    // Ensure the new month object has the expected structure
+    // (assuming backend returns _id, month, year)
+    const newMonth = {
+      ...newMonthData,
+      transactions: newMonthData.transactions || [],
+      income: newMonthData.income || 0,
+      categories: newMonthData.categories || {
+        needs: 0,
+        wants: 0,
+        savings: 0,
+      },
+      balance: newMonthData.balance || 0,
+    };
+    // Add the new month to the state, ensuring correct sorting (e.g., by year then month index)
+    setMonths((prevMonths) => {
+      const updatedMonths = [...prevMonths, newMonth];
+      // Optional: Sort months after adding
+      updatedMonths.sort((a, b) => {
+        if (a.year !== b.year) {
+          return b.year - a.year; // Sort by year descending
+        }
+        // Sort by month index if years are the same
+        const monthOrder = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+        return monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month); // Sort by month descending
+      });
+      return updatedMonths;
+    });
   };
 
   const addTransaction = (year, month, transaction) => {

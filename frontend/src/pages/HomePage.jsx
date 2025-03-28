@@ -1,47 +1,17 @@
-import { useEffect, useState } from "react";
+import { useMonths } from "../contexts/MonthsContext";
 import MonthlyCard from "../components/MonthlyCard";
 
 function HomePage() {
-  const [months, setMonths] = useState([]);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { months } = useMonths(); // Use the context
 
-  useEffect(() => {
-    const fetchMonths = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch("/api/months");
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setMonths(data);
-      } catch (error) {
-        console.error("Error fetching months:", error);
-        setError("Failed to load months. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMonths();
-  }, []);
-
-  if (loading) {
+  // Basic loading state check based on whether months have loaded
+  // Note: Context doesn't explicitly provide loading/error,
+  // so this is a simplified check. A more robust solution might
+  // involve adding loading/error states to the context itself.
+  if (!months) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-gray-600 dark:text-gray-400">Loading...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-red-600 dark:text-red-400">{error}</div>
       </div>
     );
   }
