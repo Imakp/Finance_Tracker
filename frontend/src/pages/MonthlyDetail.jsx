@@ -1,72 +1,55 @@
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react"; // Removed useEffect, added useMemo
 import { useParams, useNavigate } from "react-router-dom";
 import { useMonths } from "../contexts/MonthsContext";
 import { FiArrowLeft, FiPlus, FiTrash2, FiEdit } from "react-icons/fi";
 import EditMonthModal from "../components/EditMonthModal";
+import axios from "axios"; // Import axios
 
 function MonthlyDetail() {
   const navigate = useNavigate();
   const { year, month } = useParams();
-  const { addTransaction, updateTransaction, deleteTransaction } = useMonths();
-  const [currentMonth, setCurrentMonth] = useState(null);
+  // Get full context including months array and functions
+  const { months, addTransaction, updateTransaction, deleteTransaction } =
+    useMonths();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [selectedTransactionIndex, setSelectedTransactionIndex] = useState(-1);
-  const [transactions, setTransactions] = useState([]);
+  const [selectedTransactionIndex, setSelectedTransactionIndex] = useState(-1); // Keep track of index for context functions
 
-  useEffect(() => {
-    const fetchMonth = async () => {
-      try {
-        const response = await fetch(`/api/months/${year}/${month}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch month');
-        }
-        const data = await response.json();
-        setCurrentMonth(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+  // Find the current month data from the context
+  const currentMonth = useMemo(() => {
+    const numericYear = parseInt(year, 10);
+    return months.find(
+      (m) =>
+        m.year === numericYear && m.month.toLowerCase() === month.toLowerCase()
+    );
+  }, [months, year, month]);
 
-    fetchMonth();
-  }, [year, month]);
+  // Get transactions directly from the derived currentMonth
+  const transactions = currentMonth?.transactions || [];
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const response = await fetch(`/api/months/${year}/${month}/transactions`);
-        if (!response.ok) throw new Error('Failed to fetch transactions');
-        const data = await response.json();
-        setTransactions(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    
-    if (currentMonth) {
-      fetchTransactions();
-    }
-  }, [currentMonth, year, month]);
-
+  // TODO: Implement delete month in context if needed, or keep API call here
   const handleDeleteMonth = async () => {
     try {
-      const response = await fetch(`/api/months/${year}/${month}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete month');
-      }
-
-      navigate('/'); // Redirect to home after deletion
+      // Assuming deletion should also update context if HomePage uses it
+      await axios.delete(`/api/months/${year}/${month}`);
+      // TODO: Add deleteMonth function to context and call it here
+      // deleteMonth(year, month); // Example call
+      navigate("/"); // Redirect to home after deletion
     } catch (error) {
+      console.error("Error deleting month:", error);
       alert(error.message);
     }
   };
 
+  // Show loading or not found if month data isn't available yet from context
   if (!currentMonth) {
-    return <div className="container mx-auto px-4 pt-20">Month not found</div>;
+    // Could add a loading indicator here
+    return (
+      <div className="container mx-auto px-4 pt-20">
+        Loading month data or month not found...
+      </div>
+    );
   }
 
   const getCategoryColor = (type) => {
@@ -84,89 +67,81 @@ function MonthlyDetail() {
 
   const totalIncome = currentMonth.income || 1;
 
+  // TODO: Implement update month in context if needed
   const handleEditMonth = async (updatedData) => {
     try {
-      const response = await fetch(`/api/months/${year}/${month}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update month');
-      }
-
-      const updatedMonth = await response.json();
-      setCurrentMonth(updatedMonth);
+      const response = await axios.put(
+        `/api/months/${year}/${month}`,
+        updatedData
+      );
+      // TODO: Add updateMonth function to context and call it here
+      // updateMonth(year, month, response.data); // Example call
+      // For now, rely on context re-render if HomePage needs update,
+      // but local view might need direct update if context doesn't handle month details yet
+      // setCurrentMonth(response.data); // Removed as currentMonth comes from context
       setIsEditModalOpen(false);
     } catch (error) {
+      console.error("Error updating month:", error);
       alert(error.message);
     }
   };
 
+  // Use context's addTransaction
   const handleAddTransaction = async (transaction) => {
     try {
-      const response = await fetch(`/api/months/${year}/${month}/transactions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(transaction),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add transaction');
-      }
-
-      // Refetch transactions after adding
-      const newTransaction = await response.json();
-      setTransactions((prev) => [...prev, newTransaction]);
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-
-  const handleUpdateTransaction = async (transactionId, updatedTransaction) => {
-    try {
-      const response = await fetch(`/api/months/${year}/${month}/transactions/${transactionId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedTransaction),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update transaction');
-      }
-
-      // Refetch transactions after updating
-      const updatedTrans = await response.json();
-      setTransactions((prev) =>
-        prev.map((transaction) =>
-          transaction._id === updatedTrans._id ? updatedTrans : transaction
-        )
+      const response = await axios.post(
+        `/api/months/${year}/${month}/transactions`,
+        transaction
       );
+      // Call context function with the transaction returned from backend (includes _id)
+      addTransaction(currentMonth.year, currentMonth.month, response.data);
+      setIsModalOpen(false); // Close modal on success
     } catch (error) {
+      console.error("Error adding transaction:", error);
       alert(error.message);
     }
   };
 
-  const handleDeleteTransaction = async (transactionId) => {
+  // Use context's updateTransaction
+  const handleUpdateTransaction = async (
+    transactionId,
+    transactionIndex,
+    updatedTransactionData
+  ) => {
     try {
-      const response = await fetch(`/api/months/${year}/${month}/transactions/${transactionId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete transaction');
-      }
-
-      // Remove the deleted transaction from the state
-      setTransactions((prev) => prev.filter((transaction) => transaction._id !== transactionId));
+      const response = await axios.put(
+        `/api/months/${year}/${month}/transactions/${transactionId}`,
+        updatedTransactionData
+      );
+      // Call context function with the index and the updated transaction from backend
+      updateTransaction(
+        currentMonth.year,
+        currentMonth.month,
+        transactionIndex,
+        response.data
+      );
+      setSelectedTransaction(null); // Close edit modal
     } catch (error) {
+      console.error("Error updating transaction:", error);
+      alert(error.message);
+    }
+  };
+
+  // Use context's deleteTransaction
+  const handleDeleteTransaction = async (transactionId, transactionIndex) => {
+    try {
+      await axios.delete(
+        `/api/months/${year}/${month}/transactions/${transactionId}`
+      );
+      // Call context function with the index
+      deleteTransaction(
+        currentMonth.year,
+        currentMonth.month,
+        transactionIndex
+      );
+      setSelectedTransaction(null); // Close edit modal if open
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
       alert(error.message);
     }
   };
@@ -327,10 +302,10 @@ function MonthlyDetail() {
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {transactions.map((transaction, index) => (
                       <tr
-                        key={index}
+                        key={transaction._id || index} // Use _id if available, fallback to index
                         onClick={() => {
                           setSelectedTransaction(transaction);
-                          setSelectedTransactionIndex(index);
+                          setSelectedTransactionIndex(index); // Store index for context updates
                         }}
                         className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                       >
@@ -513,9 +488,13 @@ function MonthlyDetail() {
                   type: formData.get("type"),
                 };
 
-                // Call the handleUpdateTransaction function
-                handleUpdateTransaction(selectedTransaction._id, updatedTransaction);
-                setSelectedTransaction(null);
+                // Pass index along with ID and data
+                handleUpdateTransaction(
+                  selectedTransaction._id,
+                  selectedTransactionIndex,
+                  updatedTransaction
+                );
+                // setSelectedTransaction(null); // Moved inside handleUpdateTransaction success
               }}
             >
               <div className="mb-4">
@@ -571,8 +550,12 @@ function MonthlyDetail() {
                 <button
                   type="button"
                   onClick={() => {
-                    handleDeleteTransaction(selectedTransaction._id);
-                    setSelectedTransaction(null);
+                    // Pass index along with ID
+                    handleDeleteTransaction(
+                      selectedTransaction._id,
+                      selectedTransactionIndex
+                    );
+                    // setSelectedTransaction(null); // Moved inside handleDeleteTransaction success
                   }}
                   className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                 >
