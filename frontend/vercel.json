@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "http://localhost:3000/api/$1"
+      "destination": "https://finance-tracker-backend-eight.vercel.app/api/$1"
     },
     {
       "source": "/(.*)",
