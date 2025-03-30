@@ -11,9 +11,11 @@ function App() {
     <ThemeProvider>
       <MonthsProvider>
         <Router>
-          <div className="app min-h-screen bg-white dark:bg-gray-900">
+          {/* Apply base styles: font, background, text color, and transition */}
+          <div className="app min-h-screen font-sans bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary transition-colors duration-300">
             <Header />
-            <main className="content">
+            {/* Ensure main content area has appropriate padding */}
+            <main className="content container mx-auto px-4 py-8">
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 {/* Wrap MonthlyDetail route with its provider */}

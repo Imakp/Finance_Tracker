@@ -1,32 +1,29 @@
-import { useState } from "react"; // Removed useMemo
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useMonths } from "../contexts/MonthsContext"; // Keep for deleteMonth
-import { useMonthlyDetail } from "../contexts/MonthlyDetailContext"; // Import the new context hook
+import { useMonths } from "../contexts/MonthsContext";
+import { useMonthlyDetail } from "../contexts/MonthlyDetailContext";
 import { FiArrowLeft, FiPlus, FiTrash2, FiEdit } from "react-icons/fi";
 import EditMonthModal from "../components/EditMonthModal";
 import axios from "axios";
-// Removed axios import as context handles API calls
 
 function MonthlyDetail() {
   const navigate = useNavigate();
   const { year, month } = useParams();
-  const { deleteMonth } = useMonths(); // Only need deleteMonth from global context
+  const { deleteMonth } = useMonths();
   const {
-    currentMonthDetail: currentMonth, // Rename for consistency
+    currentMonthDetail: currentMonth,
     loading,
     error,
     addTransaction,
     updateTransaction,
     deleteTransaction,
-    updateMonthDetails, // Use context function for updating month
-  } = useMonthlyDetail(); // Use the new context
+    updateMonthDetails,
+  } = useMonthlyDetail();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  // Removed selectedTransactionIndex as context refetches
 
-  // Get transactions directly from the context's currentMonthDetail
   const transactions = currentMonth?.transactions || [];
 
   const handleDeleteMonth = async () => {
@@ -38,13 +35,10 @@ function MonthlyDetail() {
       return;
     }
     try {
-      // Still need direct API call here as it's a destructive action affecting the list
       await axios.delete(`/api/months/${year}/${month}`);
-      // Call the global context function to update the main list state
       deleteMonth(year, month);
-      navigate("/"); // Redirect to home after deletion
+      navigate("/");
     } catch (err) {
-      // Use err consistently
       console.error("Error deleting month:", err);
       alert(
         err.response?.data?.message || err.message || "Failed to delete month."
@@ -52,10 +46,9 @@ function MonthlyDetail() {
     }
   };
 
-  // Handle loading and error states from context
   if (loading) {
     return (
-      <div className="container mx-auto px-4 pt-20 text-center dark:text-gray-100">
+      <div className="text-center text-text-light-secondary dark:text-text-dark-secondary pt-10">
         Loading month details...
       </div>
     );
@@ -63,7 +56,7 @@ function MonthlyDetail() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 pt-20 text-center text-red-600 dark:text-red-400">
+      <div className="text-center text-red-600 dark:text-red-500 pt-10">
         Error: {error}
       </div>
     );
@@ -71,66 +64,89 @@ function MonthlyDetail() {
 
   if (!currentMonth) {
     return (
-      <div className="container mx-auto px-4 pt-20 text-center dark:text-gray-100">
+      <div className="text-center text-text-light-secondary dark:text-text-dark-secondary pt-10">
         Month data not found for {month} {year}.
       </div>
     );
   }
 
-  const getCategoryColor = (type) => {
-    const colors = {
-      needs: "bg-blue-200 text-blue-800 dark:bg-blue-500 dark:text-sky-50",
-      wants:
-        "bg-yellow-200 text-yellow-800 dark:bg-yellow-500 dark:text-lime-50",
-      savings:
-        "bg-green-200 text-green-800 dark:bg-green-500 dark:text-emerald-50",
-      income:
-        "bg-purple-200 text-purple-800 dark:bg-purple-500 dark:text-fuchsia-50",
-    };
-    return colors[type.toLowerCase()] || "bg-gray-100";
+  const categoryStyles = {
+    needs: {
+      bg: "bg-needs",
+      text: "text-white",
+      border: "border-needs",
+      stroke: "stroke-needs",
+      fill: "fill-needs",
+    },
+    wants: {
+      bg: "bg-wants",
+      text: "text-white",
+      border: "border-wants",
+      stroke: "stroke-wants",
+      fill: "fill-wants",
+    },
+    savings: {
+      bg: "bg-savings",
+      text: "text-white",
+      border: "border-savings",
+      stroke: "stroke-savings",
+      fill: "fill-savings",
+    },
+    income: {
+      bg: "bg-income",
+      text: "text-white",
+      border: "border-income",
+      stroke: "stroke-income",
+      fill: "fill-income",
+    },
+    default: {
+      bg: "bg-gray-500",
+      text: "text-white",
+      border: "border-gray-500",
+      stroke: "stroke-gray-500",
+      fill: "fill-gray-500",
+    },
   };
 
-  // Use income from context data, provide default for calculation safety
-  const totalIncome = currentMonth.income || 1; // Use 1 to avoid division by zero
+  const getCategoryStyle = (type) => {
+    return categoryStyles[type.toLowerCase()] || categoryStyles.default;
+  };
 
-  // Use context's updateMonthDetails
+  const totalIncome = currentMonth.income || 1;
+
   const handleEditMonth = async (updatedData) => {
     try {
-      await updateMonthDetails(updatedData); // Call context function
+      await updateMonthDetails(updatedData);
       setIsEditModalOpen(false);
     } catch (err) {
-      // Use err consistently
       console.error("Error updating month:", err);
-      alert(err.message || "Failed to update month details."); // Show error from context/axios
+      alert(err.message || "Failed to update month details.");
     }
   };
 
-  // Use context's addTransaction
   const handleAddTransaction = async (transactionData) => {
     try {
-      await addTransaction(transactionData); // Call context function
-      setIsModalOpen(false); // Close modal on success
+      await addTransaction(transactionData);
+      setIsModalOpen(false);
     } catch (err) {
       console.error("Error adding transaction:", err);
-      alert(err.message || "Failed to add transaction."); // Show error from context/axios
+      alert(err.message || "Failed to add transaction.");
     }
   };
 
-  // Use context's updateTransaction
   const handleUpdateTransaction = async (
     transactionId,
     updatedTransactionData
   ) => {
     try {
-      await updateTransaction(transactionId, updatedTransactionData); // Call context function
-      setSelectedTransaction(null); // Close edit modal on success
+      await updateTransaction(transactionId, updatedTransactionData);
+      setSelectedTransaction(null);
     } catch (err) {
       console.error("Error updating transaction:", err);
-      alert(err.message || "Failed to update transaction."); // Show error from context/axios
+      alert(err.message || "Failed to update transaction.");
     }
   };
 
-  // Use context's deleteTransaction
   const handleDeleteTransaction = async (transactionId) => {
     if (
       !window.confirm(
@@ -140,65 +156,69 @@ function MonthlyDetail() {
       return;
     }
     try {
-      await deleteTransaction(transactionId); // Call context function
-      setSelectedTransaction(null); // Close edit modal if open
+      await deleteTransaction(transactionId);
+      setSelectedTransaction(null);
     } catch (err) {
       console.error("Error deleting transaction:", err);
-      alert(err.message || "Failed to delete transaction."); // Show error from context/axios
+      alert(err.message || "Failed to delete transaction.");
     }
   };
 
   return (
-    <div className="container mx-auto px-4 pt-20 pb-8">
-      <div className="mb-6 flex justify-between items-center">
-        <div className="flex items-center gap-4">
+    <div>
+      {/* Top bar: Use theme text/hover colors, adjust spacing */}
+      <div className="mb-8 flex flex-wrap justify-between items-center gap-4">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="p-2 rounded-full text-text-light-secondary dark:text-text-dark-secondary hover:bg-border-light dark:hover:bg-border-dark transition-colors duration-200"
+            aria-label="Go back"
           >
-            <FiArrowLeft
-              size={20}
-              className="text-gray-900 dark:text-gray-100"
-            />
+            <FiArrowLeft size={20} />
           </button>
-          <h1 className="text-xl font-bold capitalize text-gray-900 dark:text-gray-100">
+          {/* Use theme primary text color */}
+          <h1 className="text-2xl font-semibold capitalize text-text-light-primary dark:text-text-dark-primary">
             {month} {year}
           </h1>
         </div>
-        <div className="flex items-center gap-2">
+        {/* Action buttons: Use theme colors, consistent styling */}
+        <div className="flex items-center gap-3">
           <button
-            className="p-2 rounded-full bg-blue-500 text-gray-100 hover:bg-blue-600"
+            className="p-2 rounded-full bg-primary text-white hover:bg-primary-hover transition-colors duration-200"
             onClick={() => setIsModalOpen(true)}
             aria-label="Add transaction"
           >
-            <FiPlus size={20} />
+            <FiPlus size={18} />
           </button>
+          {/* Consider adding a dedicated danger color to theme */}
           <button
-            className="p-2 rounded-full bg-red-500 text-gray-100 hover:bg-red-600"
+            className="p-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors duration-200"
             onClick={handleDeleteMonth}
             aria-label="Delete month"
           >
-            <FiTrash2 size={20} />
+            <FiTrash2 size={18} />
           </button>
+          {/* Consider adding a dedicated success/edit color */}
           <button
-            className="p-2 rounded-full bg-green-500 text-gray-100 hover:bg-green-600"
+            className="p-2 rounded-full bg-green-600 text-white hover:bg-green-700 transition-colors duration-200"
             onClick={() => setIsEditModalOpen(true)}
             aria-label="Edit month"
           >
-            <FiEdit size={20} />
+            <FiEdit size={18} />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Main content grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Left Column - Financial Summary */}
-        <div className="space-y-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-            <h2 className="text-lg font-semibold mb-4 dark:text-gray-100">
+        <div className="space-y-6 lg:space-y-8">
+          {/* Monthly Breakdown Card */}
+          <div className="bg-card-light dark:bg-card-dark p-5 rounded-lg border border-border-light dark:border-border-dark">
+            <h2 className="text-lg font-semibold mb-5 text-text-light-primary dark:text-text-dark-primary">
               Monthly Breakdown
             </h2>
-
-            <div className="space-y-4">
+            <div className="space-y-5">
               {["needs", "wants", "savings"].map((type) => {
                 const actualPercentage =
                   totalIncome > 0
@@ -210,24 +230,25 @@ function MonthlyDetail() {
                   savings: 20,
                 }[type];
 
+                const categoryStyle = getCategoryStyle(type);
                 return (
-                  <div key={type} className="space-y-2">
+                  <div key={type} className="space-y-1.5">
                     <div className="flex justify-between text-sm">
-                      <span className="capitalize dark:text-gray-300">
+                      {/* Use theme text colors */}
+                      <span className="capitalize text-text-light-secondary dark:text-text-dark-secondary">
                         {type}
                       </span>
-                      <span className="dark:text-gray-300">
+                      <span className="font-medium text-text-light-primary dark:text-text-dark-primary">
                         ₹{currentMonth.categories[type].toLocaleString()} / ₹
                         {Math.round(
                           totalIncome * (targetPercentage / 100)
                         ).toLocaleString()}
                       </span>
                     </div>
-                    <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700">
+                    {/* Use theme border color for track, theme category color for fill */}
+                    <div className="h-2 bg-border-light dark:bg-border-dark rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full ${getCategoryColor(
-                          type
-                        )}`}
+                        className={`h-full rounded-full ${categoryStyle.bg} transition-all duration-300 ease-in-out`}
                         style={{
                           width: `${Math.min(
                             (
@@ -250,120 +271,166 @@ function MonthlyDetail() {
             </div>
           </div>
 
-          {/* Remarks Section */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-            <h3 className="font-semibold mb-3 dark:text-gray-100">
+          {/* Remarks Section Card */}
+          <div className="bg-card-light dark:bg-card-dark p-5 rounded-lg border border-border-light dark:border-border-dark">
+            <h3 className="text-lg font-semibold mb-4 text-text-light-primary dark:text-text-dark-primary">
               Financial Health Check
             </h3>
-            <ul className="space-y-2 text-sm dark:text-gray-300">
+            {/* Use theme text colors */}
+            <ul className="space-y-2.5 text-sm text-text-light-secondary dark:text-text-dark-secondary">
               {currentMonth.categories.needs > totalIncome * 0.5 && (
-                <li>
-                  ⚠️ Needs spending exceeds 50% - consider reducing essential
-                  expenses
+                <li className="flex items-start gap-2">
+                  <span className="text-yellow-500 mt-0.5">⚠️</span> Needs
+                  spending exceeds 50% - consider reducing essential expenses
                 </li>
               )}
               {currentMonth.categories.wants > totalIncome * 0.3 && (
-                <li>
-                  ⚠️ Wants spending exceeds 30% - review discretionary spending
+                <li className="flex items-start gap-2">
+                  <span className="text-yellow-500 mt-0.5">⚠️</span> Wants
+                  spending exceeds 30% - review discretionary spending
                 </li>
               )}
               {currentMonth.categories.savings < totalIncome * 0.2 && (
-                <li>⚠️ Savings below 20% - prioritize saving goals</li>
+                <li className="flex items-start gap-2">
+                  <span className="text-yellow-500 mt-0.5">⚠️</span> Savings
+                  below 20% - prioritize saving goals
+                </li>
               )}
               {currentMonth.balance < 0 && (
-                <li>🚨 Negative balance - overspending detected!</li>
+                <li className="flex items-start gap-2">
+                  <span className="text-red-500 mt-0.5">🚨</span> Negative
+                  balance - overspending detected!
+                </li>
               )}
+              {/* Added check for no alerts */}
+              {currentMonth.categories.needs <= totalIncome * 0.5 &&
+                currentMonth.categories.wants <= totalIncome * 0.3 &&
+                currentMonth.categories.savings >= totalIncome * 0.2 &&
+                currentMonth.balance >= 0 && (
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 mt-0.5">✅</span> Looking
+                    good! Your budget follows the 50/30/20 rule.
+                  </li>
+                )}
             </ul>
           </div>
         </div>
 
         {/* Right Column - Transactions Table */}
-        <div className="md:col-span-2">
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
-            <div className="min-w-[800px]">
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+        <div className="lg:col-span-2">
+          {/* Use theme card/border colors */}
+          <div className="rounded-lg border border-border-light dark:border-border-dark overflow-hidden">
+            {/* Removed min-w, let table be responsive */}
+            <div className="overflow-x-auto scrollbar-hide">
+              <table className="w-full text-sm">
+                {/* Use theme background/text colors for header */}
+                <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-border-light dark:border-border-dark">
                   <tr>
-                    <th className="px-4 py-3 text-left text-base font-medium text-gray-900 dark:text-gray-100 w-auto">
+                    <th className="px-4 py-3 text-left font-medium text-text-light-secondary dark:text-text-dark-secondary w-auto">
                       Name
                     </th>
-                    <th className="px-4 py-3 text-center text-base font-medium text-gray-900 dark:text-gray-100 w-32">
+                    <th className="px-4 py-3 text-center font-medium text-text-light-secondary dark:text-text-dark-secondary w-32">
                       Amount
                     </th>
-                    <th className="px-4 py-3 text-center text-base font-medium text-gray-900 dark:text-gray-100 w-48">
+                    <th className="px-4 py-3 text-center font-medium text-text-light-secondary dark:text-text-dark-secondary w-40">
                       Date
                     </th>
-                    <th className="px-4 py-3 text-center text-base font-medium text-gray-900 dark:text-gray-100 w-40">
-                      Type
+                    <th className="px-4 py-3 text-center font-medium text-text-light-secondary dark:text-text-dark-secondary w-36">
+                      Category
                     </th>
                   </tr>
                 </thead>
               </table>
-              <div className="max-h-[68vh] overflow-y-auto">
-                <table className="w-full">
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {transactions.map((transaction, index) => (
-                      <tr
-                        key={transaction._id} // Use _id from backend data
-                        onClick={() => {
-                          setSelectedTransaction(transaction);
-                          // Removed setSelectedTransactionIndex
-                        }}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                      >
-                        <td className="px-4 py-4 dark:text-gray-100 whitespace-normal break-words max-w-[200px] w-auto">
-                          {transaction.name}
-                        </td>
-                        <td
-                          className={`px-4 py-4 text-center w-32 ${
-                            transaction.amount > 0
-                              ? "text-green-600 dark:text-green-400"
-                              : "text-red-600 dark:text-red-400"
-                          }`}
-                        >
-                          ₹{Math.abs(transaction.amount).toLocaleString()}
-                        </td>
-                        <td className="px-4 py-4 dark:text-gray-100 text-center w-48">
-                          {new Date(transaction.date).toLocaleDateString(
-                            "en-IN",
-                            {
-                              month: "long",
-                              day: "2-digit",
-                              year: "numeric",
-                            }
-                          )}
-                        </td>
-                        <td className="px-4 py-4 text-center w-40">
-                          <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(
-                              transaction.type
-                            )}`}
+              {/* Table body container with max height */}
+              <div className="max-h-[calc(100vh-250px)] overflow-y-auto scrollbar-hide">
+                {" "}
+                {/* Adjust max-h as needed */}
+                <table className="w-full text-sm">
+                  {/* Use theme background/text/divider colors */}
+                  <tbody className="divide-y divide-border-light dark:divide-border-dark bg-card-light dark:bg-card-dark">
+                    {transactions.length > 0 ? (
+                      transactions.map((transaction) => {
+                        const categoryStyle = getCategoryStyle(
+                          transaction.type
+                        );
+                        const isIncome =
+                          transaction.type.toLowerCase() === "income";
+                        const amountColor = isIncome
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-red-600 dark:text-red-400";
+
+                        return (
+                          <tr
+                            key={transaction._id}
+                            onClick={() => setSelectedTransaction(transaction)}
+                            className="hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors duration-150"
                           >
-                            {transaction.type}
-                          </span>
+                            {/* Use theme text colors */}
+                            <td className="px-4 py-3 text-text-light-primary dark:text-text-dark-primary whitespace-normal break-words w-auto">
+                              {transaction.name}
+                            </td>
+                            <td
+                              className={`px-4 py-3 text-center font-medium w-32 ${amountColor}`}
+                            >
+                              {isIncome ? "+" : "-"} ₹
+                              {Math.abs(transaction.amount).toLocaleString()}
+                            </td>
+                            <td className="px-4 py-3 text-text-light-secondary dark:text-text-dark-secondary text-center w-40">
+                              {new Date(transaction.date).toLocaleDateString(
+                                undefined,
+                                {
+                                  month: "long",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                }
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-center w-36">
+                              {/* Use theme category styles for badge */}
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryStyle.bg} ${categoryStyle.text} capitalize`}
+                              >
+                                {transaction.type}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="4"
+                          className="px-4 py-6 text-center text-text-light-secondary dark:text-text-dark-secondary"
+                        >
+                          No transactions found. Click the + button to add your
+                          first transaction.
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
-              <table className="w-full">
-                <tfoot className="bg-gray-50 dark:bg-gray-800">
+              {/* Footer table */}
+              <table className="w-full text-sm">
+                {/* Use theme background/text/border colors */}
+                <tfoot className="bg-gray-50 dark:bg-gray-900/50 border-t border-border-light dark:border-border-dark">
                   <tr>
-                    <td className="px-4 py-3 text-sm font-semibold dark:text-gray-100 w-auto text-right">
-                      Total
+                    <td className="px-4 py-3 font-semibold text-text-light-secondary dark:text-text-dark-secondary w-auto text-right">
+                      Balance
                     </td>
                     <td
-                      className={`px-4 py-3 text-sm text-center font-semibold w-32 ${
+                      className={`px-4 py-3 text-center font-semibold w-32 ${
                         currentMonth.balance >= 0
                           ? "text-green-600 dark:text-green-400"
                           : "text-red-600 dark:text-red-400"
                       }`}
                     >
-                      ₹{Math.abs(currentMonth.balance).toLocaleString()}
+                      ₹{currentMonth.balance.toLocaleString()}{" "}
+                      {/* Show actual balance with sign */}
                     </td>
-                    <td className="px-4 py-3 w-48"></td>
+                    {/* Keep empty cells for alignment */}
                     <td className="px-4 py-3 w-40"></td>
+                    <td className="px-4 py-3 w-36"></td>
                   </tr>
                 </tfoot>
               </table>
@@ -374,10 +441,14 @@ function MonthlyDetail() {
 
       {/* Add Transaction Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md dark:text-gray-100">
-            <h2 className="text-xl font-bold mb-4">Add New Transaction</h2>
-
+        // Use a slightly darker overlay
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          {/* Apply theme card styles */}
+          <div className="bg-card-light dark:bg-card-dark rounded-lg p-6 w-full max-w-md border border-border-light dark:border-border-dark">
+            {/* Apply theme text styles */}
+            <h2 className="text-xl font-semibold mb-5 text-text-light-primary dark:text-text-dark-primary">
+              Add New Transaction
+            </h2>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -392,20 +463,22 @@ function MonthlyDetail() {
                 setIsModalOpen(false);
               }}
             >
+              {/* Apply theme text/input styles */}
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2 dark:text-gray-300">
+                <label className="block text-sm font-medium mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
                   Name
                 </label>
                 <input
                   name="name"
                   type="text"
                   required
-                  className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  className="w-full p-2 border border-border-light dark:border-border-dark rounded-md bg-background-light dark:bg-gray-700 text-text-light-primary dark:text-text-dark-primary focus:ring-primary focus:border-primary"
+                  placeholder="e.g., Groceries, Salary"
                 />
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2 dark:text-gray-300">
+                <label className="block text-sm font-medium mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
                   Amount
                 </label>
                 <input
@@ -413,31 +486,37 @@ function MonthlyDetail() {
                   type="number"
                   step="0.01"
                   required
-                  className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  className="w-full p-2 border border-border-light dark:border-border-dark rounded-md bg-background-light dark:bg-gray-700 text-text-light-primary dark:text-text-dark-primary focus:ring-primary focus:border-primary"
+                  placeholder="e.g., 50.00"
                 />
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2 dark:text-gray-300">
+                <label className="block text-sm font-medium mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
                   Date
                 </label>
                 <input
                   name="date"
                   type="date"
                   defaultValue={new Date().toISOString().split("T")[0]}
-                  className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  required
+                  className="w-full p-2 border border-border-light dark:border-border-dark rounded-md bg-background-light dark:bg-gray-700 text-text-light-primary dark:text-text-dark-primary focus:ring-primary focus:border-primary"
                 />
               </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-                  Type
+              <div className="mb-5">
+                <label className="block text-sm font-medium mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
+                  Category
                 </label>
                 <select
                   name="type"
                   required
-                  className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  className="w-full p-2 border border-border-light dark:border-border-dark rounded-md bg-background-light dark:bg-gray-700 text-text-light-primary dark:text-text-dark-primary focus:ring-primary focus:border-primary"
                 >
+                  <option value="" disabled defaultValue>
+                    Select category
+                  </option>{" "}
+                  {/* Fixed selected to defaultValue */}
                   <option value="income">Income</option>
                   <option value="needs">Needs</option>
                   <option value="wants">Wants</option>
@@ -445,19 +524,20 @@ function MonthlyDetail() {
                 </select>
               </div>
 
-              <div className="flex justify-end gap-4">
+              {/* Apply theme button styles */}
+              <div className="flex justify-end gap-3 mt-6">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200"
+                  className="px-4 py-1.5 rounded-md text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary hover:bg-border-light dark:hover:bg-border-dark transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-500 text-gray-100 rounded hover:bg-blue-600"
+                  className="px-4 py-1.5 rounded-md text-sm font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
                 >
-                  Add
+                  Add Transaction
                 </button>
               </div>
             </form>
@@ -465,7 +545,7 @@ function MonthlyDetail() {
         </div>
       )}
 
-      {/* Edit Month Modal */}
+      {/* Edit Month Modal - Removed duplicate */}
       {isEditModalOpen && (
         <EditMonthModal
           isOpen={isEditModalOpen}
@@ -475,53 +555,63 @@ function MonthlyDetail() {
         />
       )}
 
+      {/* Edit Transaction Modal */}
       {selectedTransaction && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md dark:text-gray-100">
-            <h2 className="text-xl font-bold mb-4">Edit Transaction</h2>
+        // Use a slightly darker overlay
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          {/* Apply theme card styles */}
+          <div className="bg-card-light dark:bg-card-dark rounded-lg p-6 w-full max-w-md border border-border-light dark:border-border-dark">
+            {/* Apply theme text styles */}
+            <h2 className="text-xl font-semibold mb-5 text-text-light-primary dark:text-text-dark-primary">
+              Edit Transaction
+            </h2>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
                 const updatedTransactionData = {
-                  // Rename for clarity
                   name: formData.get("name"),
-                  // Ensure amount is positive, type determines sign in backend/context logic if needed
                   amount: Math.abs(parseFloat(formData.get("amount"))),
                   date: formData.get("date"),
                   type: formData.get("type"),
                 };
 
-                // Pass only ID and data, context handles the rest
                 handleUpdateTransaction(
                   selectedTransaction._id,
                   updatedTransactionData
                 );
               }}
             >
+              {/* Apply theme text/input styles */}
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Name</label>
+                <label className="block text-sm font-medium mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
+                  Name
+                </label>
                 <input
                   name="name"
                   type="text"
                   required
                   defaultValue={selectedTransaction?.name}
-                  className="w-full p-2 border rounded-md dark:bg-gray-700"
+                  className="w-full p-2 border border-border-light dark:border-border-dark rounded-md bg-background-light dark:bg-gray-700 text-text-light-primary dark:text-text-dark-primary focus:ring-primary focus:border-primary"
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Amount</label>
+                <label className="block text-sm font-medium mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
+                  Amount
+                </label>
                 <input
                   name="amount"
                   type="number"
                   step="0.01"
                   required
                   defaultValue={Math.abs(selectedTransaction?.amount)}
-                  className="w-full p-2 border rounded-md dark:bg-gray-700"
+                  className="w-full p-2 border border-border-light dark:border-border-dark rounded-md bg-background-light dark:bg-gray-700 text-text-light-primary dark:text-text-dark-primary focus:ring-primary focus:border-primary"
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Date</label>
+                <label className="block text-sm font-medium mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
+                  Date
+                </label>
                 <input
                   name="date"
                   type="date"
@@ -531,16 +621,18 @@ function MonthlyDetail() {
                       .toISOString()
                       .split("T")[0]
                   }
-                  className="w-full p-2 border rounded-md dark:bg-gray-700"
+                  className="w-full p-2 border border-border-light dark:border-border-dark rounded-md bg-background-light dark:bg-gray-700 text-text-light-primary dark:text-text-dark-primary focus:ring-primary focus:border-primary"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Type</label>
+              <div className="mb-5">
+                <label className="block text-sm font-medium mb-1.5 text-text-light-secondary dark:text-text-dark-secondary">
+                  Category
+                </label>
                 <select
                   name="type"
                   required
                   defaultValue={selectedTransaction.type}
-                  className="w-full p-2 border rounded-md dark:bg-gray-700"
+                  className="w-full p-2 border border-border-light dark:border-border-dark rounded-md bg-background-light dark:bg-gray-700 text-text-light-primary dark:text-text-dark-primary focus:ring-primary focus:border-primary"
                 >
                   <option value="income">Income</option>
                   <option value="needs">Needs</option>
@@ -548,30 +640,31 @@ function MonthlyDetail() {
                   <option value="savings">Savings</option>
                 </select>
               </div>
-              <div className="flex justify-between">
+              {/* Apply theme button styles */}
+              <div className="flex justify-between items-center mt-6">
                 <button
                   type="button"
-                  onClick={() => {
-                    // Pass only ID
-                    handleDeleteTransaction(selectedTransaction._id);
-                  }}
-                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  onClick={() =>
+                    handleDeleteTransaction(selectedTransaction._id)
+                  }
+                  className="px-4 py-1.5 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors"
+                  aria-label="Delete transaction"
                 >
                   Delete
                 </button>
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={() => setSelectedTransaction(null)}
-                    className="px-4 py-2 text-gray-600 dark:text-gray-300"
+                    className="px-4 py-1.5 rounded-md text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary hover:bg-border-light dark:hover:bg-border-dark transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className="px-4 py-1.5 rounded-md text-sm font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
                   >
-                    Update
+                    Update Transaction
                   </button>
                 </div>
               </div>

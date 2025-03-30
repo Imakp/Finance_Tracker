@@ -56,21 +56,23 @@ function NewMonthModal({ isOpen, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4 sm:p-6 md:p-8">
-      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md mx-auto overflow-hidden shadow-xl">
-        {/* Header */}
-        <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      {/* Use theme card styles */}
+      <div className="bg-card-light dark:bg-card-dark rounded-lg w-full max-w-md mx-auto overflow-hidden border border-border-light dark:border-border-dark">
+        {/* Header: Use theme text/border colors */}
+        <div className="px-6 py-4 border-b border-border-light dark:border-border-dark">
+          <h2 className="text-lg font-semibold text-text-light-primary dark:text-text-dark-primary">
             Create New Month
           </h2>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
+        {/* Form: Adjust padding and spacing */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {/* Apply theme label/select styles */}
           <div>
             <label
               htmlFor="year-select"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-1.5"
             >
               Select Year
             </label>
@@ -78,7 +80,8 @@ function NewMonthModal({ isOpen, onClose }) {
               id="year-select"
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="w-full h-12 px-3 py-2 text-base border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+              required // Add required attribute
+              className="w-full p-2 border border-border-light dark:border-border-dark rounded-md bg-background-light dark:bg-gray-700 text-text-light-primary dark:text-text-dark-primary focus:ring-primary focus:border-primary"
             >
               {Array.from(
                 { length: 5 },
@@ -91,10 +94,11 @@ function NewMonthModal({ isOpen, onClose }) {
             </select>
           </div>
 
+          {/* Apply theme label/select styles */}
           <div>
             <label
               htmlFor="month-select"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-1.5"
             >
               Select Month
             </label>
@@ -102,7 +106,8 @@ function NewMonthModal({ isOpen, onClose }) {
               id="month-select"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="w-full h-12 px-3 py-2 text-base border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+              required
+              className="w-full p-2 border border-border-light dark:border-border-dark rounded-md bg-background-light dark:bg-gray-700 text-text-light-primary dark:text-text-dark-primary focus:ring-primary focus:border-primary"
             >
               {months.map((month) => (
                 <option key={month} value={month}>
@@ -112,20 +117,20 @@ function NewMonthModal({ isOpen, onClose }) {
             </select>
           </div>
 
-          {/* Footer with buttons */}
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:gap-4 mt-6">
+          {/* Footer with buttons: Apply theme styles */}
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="w-full sm:w-auto px-4 py-3 sm:py-2 text-center text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-4 py-1.5 rounded-md text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary hover:bg-border-light dark:hover:bg-border-dark transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="w-full sm:w-auto px-4 py-3 sm:py-2 text-center text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+              className="px-4 py-1.5 rounded-md text-sm font-medium bg-primary text-white hover:bg-primary-hover transition-colors"
             >
-              Create
+              Create Month
             </button>
           </div>
         </form>

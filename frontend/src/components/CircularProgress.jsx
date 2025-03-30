@@ -23,26 +23,35 @@ function CircularProgress({ percentage, color, label, size = "default" }) {
   const { radius, svgClass, labelClass, valueClass } =
     sizeConfig[size] || sizeConfig.default;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+  const validPercentage = Number(percentage) || 0;
+  const strokeDashoffset =
+    circumference - (validPercentage / 100) * circumference;
 
-  const colors = {
-    blue: "stroke-blue-400",
-    yellow: "stroke-yellow-400",
-    green: "stroke-green-400",
+  const colorClasses = {
+    needs: "stroke-needs",
+    wants: "stroke-wants",
+    savings: "stroke-savings",
+    income: "stroke-income",
+    primary: "stroke-primary",
+    default: "stroke-gray-400",
   };
+
+  const strokeColorClass = colorClasses[color] || colorClasses.default;
 
   return (
     <div className="flex flex-col items-center">
       <svg className={`${svgClass} transform -rotate-90`} viewBox="0 0 100 100">
+        {/* Use theme border colors for the background track */}
         <circle
-          className="stroke-gray-200 dark:stroke-gray-700 fill-none"
+          className="stroke-border-light dark:stroke-border-dark fill-none"
           strokeWidth="8"
           cx="50"
           cy="50"
           r={radius}
         />
+        {/* Apply the mapped theme color class */}
         <circle
-          className={`${colors[color]} fill-none`}
+          className={`${strokeColorClass} fill-none transition-all duration-300 ease-in-out`}
           strokeWidth="8"
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -52,13 +61,17 @@ function CircularProgress({ percentage, color, label, size = "default" }) {
           r={radius}
         />
       </svg>
+      {/* Use theme text colors */}
       <span
-        className={`mt-2 font-medium text-gray-900 dark:text-gray-100 ${labelClass}`}
+        className={`mt-2 font-medium text-text-light-primary dark:text-text-dark-primary ${labelClass}`}
       >
         {label}
       </span>
-      <span className={`text-gray-600 dark:text-gray-400 ${valueClass}`}>
-        {percentage}%
+      {/* Use theme secondary text colors */}
+      <span
+        className={`text-text-light-secondary dark:text-text-dark-secondary ${valueClass}`}
+      >
+        {validPercentage}%
       </span>
     </div>
   );

@@ -18,10 +18,7 @@ export function MonthsProvider({ children }) {
     fetchMonths();
   }, []);
 
-  // Accepts the newly created month object from the backend response
   const addMonth = (newMonthData) => {
-    // Ensure the new month object has the expected structure
-    // (assuming backend returns _id, month, year)
     const newMonth = {
       ...newMonthData,
       transactions: newMonthData.transactions || [],
@@ -33,15 +30,12 @@ export function MonthsProvider({ children }) {
       },
       balance: newMonthData.balance || 0,
     };
-    // Add the new month to the state, ensuring correct sorting (e.g., by year then month index)
     setMonths((prevMonths) => {
       const updatedMonths = [...prevMonths, newMonth];
-      // Optional: Sort months after adding
       updatedMonths.sort((a, b) => {
         if (a.year !== b.year) {
-          return b.year - a.year; // Sort by year descending
+          return b.year - a.year;
         }
-        // Sort by month index if years are the same
         const monthOrder = [
           "January",
           "February",
@@ -56,7 +50,7 @@ export function MonthsProvider({ children }) {
           "November",
           "December",
         ];
-        return monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month); // Sort by month descending
+        return monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month);
       });
       return updatedMonths;
     });
@@ -71,13 +65,11 @@ export function MonthsProvider({ children }) {
             ? Math.abs(transaction.amount)
             : -Math.abs(transaction.amount);
 
-          // Add the new transaction
           const updatedTransactions = [
             ...m.transactions,
             { ...transaction, amount },
           ];
 
-          // Recalculate totals from all transactions
           const totals = updatedTransactions.reduce(
             (acc, t) => {
               const transAmount = Math.abs(t.amount);
@@ -87,7 +79,7 @@ export function MonthsProvider({ children }) {
                 acc.categories[t.type] =
                   (acc.categories[t.type] || 0) + transAmount;
               }
-              acc.balance += t.amount; // Use signed amount for balance
+              acc.balance += t.amount;
               return acc;
             },
             {
@@ -121,7 +113,6 @@ export function MonthsProvider({ children }) {
           const transactions = [...m.transactions];
           transactions[index] = updatedTransaction;
 
-          // Recalculate totals
           const totals = transactions.reduce(
             (acc, t) => {
               const transAmount = Math.abs(t.amount);
@@ -160,7 +151,6 @@ export function MonthsProvider({ children }) {
         if (m.year === year && m.month.toLowerCase() === month.toLowerCase()) {
           const transactions = m.transactions.filter((_, i) => i !== index);
 
-          // Recalculate totals
           const totals = transactions.reduce(
             (acc, t) => {
               const transAmount = Math.abs(t.amount);
@@ -193,7 +183,6 @@ export function MonthsProvider({ children }) {
     );
   };
 
-  // Function to delete a month from the state
   const deleteMonth = (year, month) => {
     setMonths((prev) =>
       prev.filter(
@@ -211,11 +200,11 @@ export function MonthsProvider({ children }) {
       value={{
         months,
         addMonth,
-        addMonth, // Ensure addMonth is included if it wasn't before
+        addMonth,
         addTransaction,
         updateTransaction,
         deleteTransaction,
-        deleteMonth, // Add the new deleteMonth function
+        deleteMonth,
       }}
     >
       {children}

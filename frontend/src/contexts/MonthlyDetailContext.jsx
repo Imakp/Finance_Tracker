@@ -11,13 +11,13 @@ import { useParams } from "react-router-dom";
 const MonthlyDetailContext = createContext();
 
 export function MonthlyDetailProvider({ children }) {
-  const { year, month } = useParams(); // Get year/month from URL params
+  const { year, month } = useParams();
   const [currentMonthDetail, setCurrentMonthDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchMonthlyDetail = useCallback(async () => {
-    if (!year || !month) return; // Don't fetch if params aren't available
+    if (!year || !month) return;
 
     setLoading(true);
     setError(null);
@@ -31,20 +31,16 @@ export function MonthlyDetailProvider({ children }) {
           err.message ||
           "Failed to fetch month details"
       );
-      setCurrentMonthDetail(null); // Clear data on error
+      setCurrentMonthDetail(null);
     } finally {
       setLoading(false);
     }
-  }, [year, month]); // Dependency array includes year and month
+  }, [year, month]);
 
-  // Fetch data when year/month params change
   useEffect(() => {
     fetchMonthlyDetail();
-  }, [fetchMonthlyDetail]); // Use the memoized fetch function
+  }, [fetchMonthlyDetail]);
 
-  // --- CRUD Operations ---
-
-  // CREATE Transaction
   const addTransaction = async (transactionData) => {
     if (!currentMonthDetail) return;
     try {
@@ -52,18 +48,15 @@ export function MonthlyDetailProvider({ children }) {
         `/api/months/${year}/${month}/transactions`,
         transactionData
       );
-      // Optimistically update UI or refetch
-      // For simplicity, refetching ensures consistency
       await fetchMonthlyDetail();
-      return response.data; // Return the newly created transaction
+      return response.data;
     } catch (err) {
       console.error("Error adding transaction:", err);
       setError(err.response?.data?.message || "Failed to add transaction");
-      throw err; // Re-throw error for component handling
+      throw err;
     }
   };
 
-  // UPDATE Transaction
   const updateTransaction = async (transactionId, updatedData) => {
     if (!currentMonthDetail) return;
     try {
@@ -71,9 +64,8 @@ export function MonthlyDetailProvider({ children }) {
         `/api/months/${year}/${month}/transactions/${transactionId}`,
         updatedData
       );
-      // Refetch to update the state
       await fetchMonthlyDetail();
-      return response.data; // Return the updated transaction
+      return response.data;
     } catch (err) {
       console.error("Error updating transaction:", err);
       setError(err.response?.data?.message || "Failed to update transaction");
@@ -81,14 +73,12 @@ export function MonthlyDetailProvider({ children }) {
     }
   };
 
-  // DELETE Transaction
   const deleteTransaction = async (transactionId) => {
     if (!currentMonthDetail) return;
     try {
       await axios.delete(
         `/api/months/${year}/${month}/transactions/${transactionId}`
       );
-      // Refetch to update the state
       await fetchMonthlyDetail();
     } catch (err) {
       console.error("Error deleting transaction:", err);
@@ -97,7 +87,6 @@ export function MonthlyDetailProvider({ children }) {
     }
   };
 
-  // UPDATE Month Details (e.g., remarks, budget goals - if applicable)
   const updateMonthDetails = async (updatedData) => {
     if (!currentMonthDetail) return;
     try {
@@ -105,7 +94,6 @@ export function MonthlyDetailProvider({ children }) {
         `/api/months/${year}/${month}`,
         updatedData
       );
-      // Refetch to update the state
       await fetchMonthlyDetail();
       return response.data;
     } catch (err) {
@@ -115,14 +103,11 @@ export function MonthlyDetailProvider({ children }) {
     }
   };
 
-  // DELETE Month (Handled by MonthsContext, but could be added here if needed for specific detail view logic)
-  // const deleteCurrentMonth = async () => { ... }
-
   const value = {
     currentMonthDetail,
     loading,
     error,
-    fetchMonthlyDetail, // Expose refetch if needed manually
+    fetchMonthlyDetail,
     addTransaction,
     updateTransaction,
     deleteTransaction,
