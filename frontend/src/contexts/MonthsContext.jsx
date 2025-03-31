@@ -200,7 +200,6 @@ export function MonthsProvider({ children }) {
       value={{
         months,
         addMonth,
-        addMonth,
         addTransaction,
         updateTransaction,
         deleteTransaction,
